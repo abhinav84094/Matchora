@@ -3,6 +3,7 @@ import { createRequire } from "module";
 import Resume from "../models/Resume.js";
 import { analyzeResume } from "../services/geminiService.js";
 import { promises as fsPromises } from "fs";
+import { getCanonicalSkill } from "../services/recommendationService.js";
 
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse/lib/pdf-parse");
@@ -59,7 +60,7 @@ export const uploadResume = async (req, res) => {
                 fileName: req.file.originalname,
                 rawText: data.text,
 
-                skills: analysis.skills || [],
+                skills:  [...new Set((analysis.skills || []).map(getCanonicalSkill))],
                 education: analysis.education || [],
                 experience: analysis.experience || [],
                 projects: analysis.projects || [],
