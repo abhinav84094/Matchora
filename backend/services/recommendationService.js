@@ -269,7 +269,7 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
     .sort({
         postedDate: -1,
     })
-    .limit(300)
+    .limit(2000)
     .lean();
 
     const scoredJobs = jobs
