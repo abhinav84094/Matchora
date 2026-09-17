@@ -19,13 +19,8 @@ import {
   TrendingUp,
   X,
   Mail,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
-
-/* =========================================================
-   ENVIRONMENT
-========================================================= */
 
 const API_BASE =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -116,7 +111,9 @@ function JobCardSkeleton() {
 
         <div className="min-w-0 flex-1">
           <div className="mb-2 h-4 w-3/4 rounded bg-neutral-200" />
+
           <div className="mb-2 h-3 w-1/2 rounded bg-neutral-200" />
+
           <div className="h-3 w-2/5 rounded bg-neutral-200" />
         </div>
 
@@ -125,6 +122,7 @@ function JobCardSkeleton() {
 
       <div className="mt-5 flex gap-2">
         <div className="h-7 w-20 rounded-lg bg-neutral-200" />
+
         <div className="h-7 w-24 rounded-lg bg-neutral-200" />
       </div>
     </div>
@@ -180,15 +178,18 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
 
   const [jobs, setJobs] = useState([]);
-  const [applications, setApplications] = useState([]);
+
+  const [applications, setApplications] =
+    useState([]);
 
   const [resumeScore, setResumeScore] =
     useState(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(true);
 
-  /* APPLICATION MODAL */
+  const [error, setError] =
+    useState("");
 
   const [pendingApplication, setPendingApplication] =
     useState(null);
@@ -196,16 +197,18 @@ export default function Dashboard() {
   const [showConfirmModal, setShowConfirmModal] =
     useState(false);
 
-  const [isSubmittingApplication, setIsSubmittingApplication] =
+  const [showFeedbackModal, setShowFeedbackModal] =
+    useState(false);
+
+  /* =========================================================
+     APPLICATION SUBMIT STATE
+  ========================================================= */
+
+  const [applicationSubmitting, setApplicationSubmitting] =
     useState(false);
 
   const [applicationError, setApplicationError] =
     useState("");
-
-  /* FEEDBACK */
-
-  const [showFeedbackModal, setShowFeedbackModal] =
-    useState(false);
 
   /* =========================================================
      LOAD DASHBOARD
@@ -217,9 +220,9 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        /* ---------------------------------------------------
+        /* -----------------------------------------------------
            USER
-        --------------------------------------------------- */
+        ----------------------------------------------------- */
 
         const meRes = await fetch(
           `${API_BASE}/api/auth/me`,
@@ -229,23 +232,27 @@ export default function Dashboard() {
         );
 
         if (!meRes.ok) {
-          throw new Error("Please login again.");
+          throw new Error(
+            "Please login again."
+          );
         }
 
-        const meData = await meRes.json();
+        const meData =
+          await meRes.json();
 
         setUser(meData.user);
 
-        /* ---------------------------------------------------
+        /* -----------------------------------------------------
            APPLICATIONS
-        --------------------------------------------------- */
+        ----------------------------------------------------- */
 
-        const applicationsRes = await fetch(
-          `${API_BASE}/api/jobs/applications`,
-          {
-            credentials: "include",
-          }
-        );
+        const applicationsRes =
+          await fetch(
+            `${API_BASE}/api/jobs/applications`,
+            {
+              credentials: "include",
+            }
+          );
 
         if (!applicationsRes.ok) {
           throw new Error(
@@ -259,25 +266,29 @@ export default function Dashboard() {
         const loadedApplications =
           applicationsData.applications || [];
 
-        setApplications(loadedApplications);
-
-        const appliedKeys = new Set(
-          loadedApplications.map(
-            (application) =>
-              `${application.platform}:${application.jobId}`
-          )
+        setApplications(
+          loadedApplications
         );
 
-        /* ---------------------------------------------------
+        const appliedKeys =
+          new Set(
+            loadedApplications.map(
+              (application) =>
+                `${application.platform}:${application.jobId}`
+            )
+          );
+
+        /* -----------------------------------------------------
            RECOMMENDED JOBS
-        --------------------------------------------------- */
+        ----------------------------------------------------- */
 
-        const jobsRes = await fetch(
-          `${API_BASE}/api/jobs/recommendations`,
-          {
-            credentials: "include",
-          }
-        );
+        const jobsRes =
+          await fetch(
+            `${API_BASE}/api/jobs/recommendations`,
+            {
+              credentials: "include",
+            }
+          );
 
         if (!jobsRes.ok) {
           throw new Error(
@@ -285,43 +296,43 @@ export default function Dashboard() {
           );
         }
 
-        const jobsData = await jobsRes.json();
+        const jobsData =
+          await jobsRes.json();
 
-        const filteredJobs = (
-          jobsData.jobs || []
-        ).filter(
-          (job) =>
-            !appliedKeys.has(
-              `${job.platform}:${job.jobKey}`
-            )
-        );
+        const filteredJobs =
+          (jobsData.jobs || []).filter(
+            (job) =>
+              !appliedKeys.has(
+                `${job.platform}:${job.jobKey}`
+              )
+          );
 
         setJobs(filteredJobs);
 
-        /* ---------------------------------------------------
+        /* -----------------------------------------------------
            RESUME
-        --------------------------------------------------- */
+        ----------------------------------------------------- */
 
         try {
-          const resumeRes = await fetch(
-            `${API_BASE}/api/user/resume`,
-            {
-              credentials: "include",
-            }
-          );
+          const resumeRes =
+            await fetch(
+              `${API_BASE}/api/user/resume`,
+              {
+                credentials: "include",
+              }
+            );
 
           if (resumeRes.ok) {
             const resumeData =
               await resumeRes.json();
 
             setResumeScore(
-              resumeData?.resume?.atsScore ?? null
+              resumeData?.resume?.atsScore ??
+                null
             );
-          } else {
-            setResumeScore(null);
           }
         } catch (resumeError) {
-          console.error(
+          console.log(
             "Resume loading error:",
             resumeError
           );
@@ -352,26 +363,18 @@ export default function Dashboard() {
 
   const topJobs = jobs.slice(0, 3);
 
-  const appliedCount = applications.filter(
-    (application) =>
-      application.status === "Applied"
-  ).length;
+  const appliedCount =
+    applications.filter(
+      (application) =>
+        application.status === "Applied"
+    ).length;
 
-  const highMatchCount = jobs.filter(
-    (job) => (job.fitScore || 0) >= 90
-  ).length;
-
-  /* =========================================================
-     APPLICATION SUCCESS
-  ========================================================= */
-
-  const closeApplicationModal = () => {
-    if (isSubmittingApplication) return;
-
-    setPendingApplication(null);
-    setShowConfirmModal(false);
-    setApplicationError("");
-  };
+  const highMatchCount =
+    jobs.filter(
+      (job) =>
+        (job.fitScore || job.skillScore || 0) >=
+        90
+    ).length;
 
   /* =========================================================
      APPLICATION HANDLER
@@ -380,102 +383,120 @@ export default function Dashboard() {
   const handleApplied = async () => {
     if (
       !pendingApplication ||
-      isSubmittingApplication
+      applicationSubmitting
     ) {
       return;
     }
 
     try {
-      setIsSubmittingApplication(true);
+      setApplicationSubmitting(true);
       setApplicationError("");
+
+      const payload = {
+        jobId:
+          pendingApplication.jobKey,
+
+        company:
+          pendingApplication.company,
+
+        jobTitle:
+          pendingApplication.title,
+
+        location:
+          pendingApplication.location,
+
+        platform:
+          pendingApplication.platform,
+
+        jobUrl:
+          pendingApplication.jobUrl,
+
+        fitScore:
+          pendingApplication.skillScore,
+
+        aiReason:
+          pendingApplication.aiReason,
+      };
+
+      console.log(
+        "Creating application:",
+        payload
+      );
 
       const res = await fetch(
         `${API_BASE}/api/jobs/applications`,
         {
           method: "POST",
+
           credentials: "include",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
-          body: JSON.stringify({
-            jobId: pendingApplication.jobKey,
 
-            company:
-              pendingApplication.company,
-
-            jobTitle:
-              pendingApplication.title,
-
-            location:
-              pendingApplication.location,
-
-            platform:
-              pendingApplication.platform,
-
-            jobUrl:
-              pendingApplication.jobUrl,
-
-            fitScore:
-              pendingApplication.skillScore,
-
-            aiReason:
-              pendingApplication.aiReason,
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
-      /*
-       * Don't blindly call res.json().
-       * If backend returns HTML/text on an error,
-       * res.json() itself can throw.
-       */
+      /* -------------------------------------------------------
+         TRY TO READ JSON RESPONSE
+      ------------------------------------------------------- */
 
-      const contentType =
-        res.headers.get("content-type") || "";
+      let data = null;
 
-      let data = {};
-
-      if (
-        contentType.includes(
-          "application/json"
-        )
-      ) {
+      try {
         data = await res.json();
-      } else {
-        const text = await res.text();
-
-        data = {
-          message:
-            text ||
-            "Something went wrong.",
-        };
+      } catch (jsonError) {
+        console.warn(
+          "Response was not JSON:",
+          jsonError
+        );
       }
 
-      /* ---------------------------------------------------
-         API ERROR
-      --------------------------------------------------- */
+      console.log(
+        "Application API response:",
+        {
+          status: res.status,
+          ok: res.ok,
+          data,
+        }
+      );
+
+      /* -------------------------------------------------------
+         HTTP ERROR
+      ------------------------------------------------------- */
 
       if (!res.ok) {
-        throw new Error(
-          data.message ||
-            `Unable to save application (${res.status})`
+        setApplicationError(
+          data?.message ||
+            data?.error ||
+            `Failed to create application (${res.status}).`
         );
+
+        return;
       }
 
-      if (!data.success) {
-        throw new Error(
-          data.message ||
-            "Application could not be saved."
+      /* -------------------------------------------------------
+         BACKEND success:false
+      ------------------------------------------------------- */
+
+      if (data?.success === false) {
+        setApplicationError(
+          data?.message ||
+            data?.error ||
+            "Failed to create application."
         );
+
+        return;
       }
 
-      /* ---------------------------------------------------
-         UPDATE APPLICATIONS
-      --------------------------------------------------- */
+      /* -------------------------------------------------------
+         SUCCESS
+      ------------------------------------------------------- */
 
-      setApplications((prev) => [
-        ...prev,
-        {
+      const createdApplication =
+        data?.application || {
           jobId:
             pendingApplication.jobKey,
 
@@ -483,40 +504,69 @@ export default function Dashboard() {
             pendingApplication.platform,
 
           status: "Applied",
-        },
-      ]);
+        };
 
-      /* ---------------------------------------------------
+      /* -------------------------------------------------------
+         UPDATE APPLICATIONS
+      ------------------------------------------------------- */
+
+      setApplications((prev) => {
+        const alreadyExists =
+          prev.some(
+            (application) =>
+              application.jobId ===
+                pendingApplication.jobKey &&
+              application.platform ===
+                pendingApplication.platform
+          );
+
+        if (alreadyExists) {
+          return prev;
+        }
+
+        return [
+          ...prev,
+          createdApplication,
+        ];
+      });
+
+      /* -------------------------------------------------------
          REMOVE JOB FROM RECOMMENDATIONS
-      --------------------------------------------------- */
+      ------------------------------------------------------- */
 
       setJobs((prev) =>
         prev.filter(
           (job) =>
-            `${job.platform}:${job.jobKey}` !==
-            `${pendingApplication.platform}:${pendingApplication.jobKey}`
+            !(
+              job.platform ===
+                pendingApplication.platform &&
+              job.jobKey ===
+                pendingApplication.jobKey
+            )
         )
       );
 
-      /* ---------------------------------------------------
+      /* -------------------------------------------------------
          CLOSE MODAL
-      --------------------------------------------------- */
+      ------------------------------------------------------- */
 
       setPendingApplication(null);
+
       setShowConfirmModal(false);
+
       setApplicationError("");
     } catch (err) {
       console.error(
-        "Application save error:",
+        "Failed to create application:",
         err
       );
 
       setApplicationError(
-        err.message ||
-          "Unable to update application."
+        err?.message ||
+          "Unable to create application. Please try again."
       );
     } finally {
-      setIsSubmittingApplication(false);
+      setApplicationSubmitting(false);
     }
   };
 
@@ -525,10 +575,14 @@ export default function Dashboard() {
   ========================================================= */
 
   const handleNotYet = () => {
-    if (isSubmittingApplication) return;
+    if (applicationSubmitting) {
+      return;
+    }
 
     setPendingApplication(null);
+
     setShowConfirmModal(false);
+
     setApplicationError("");
   };
 
@@ -552,13 +606,15 @@ export default function Dashboard() {
           title: "Good",
           subtitle:
             "A few improvements can make it stronger.",
-          className: "text-amber-600",
+          className:
+            "text-amber-600",
         }
       : {
           title: "Needs Improvement",
           subtitle:
             "Improve your ATS score to get better matches.",
-          className: "text-red-600",
+          className:
+            "text-red-600",
         };
 
   /* =========================================================
@@ -568,18 +624,15 @@ export default function Dashboard() {
   return (
     <>
       <div className="flex min-h-screen w-full flex-col bg-[#fafafa] lg:flex-row">
-
-        {/* =================================================
+        {/* =====================================================
             MAIN CONTENT
-        ================================================= */}
+        ===================================================== */}
 
         <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8 lg:py-8 xl:px-10">
-
           {/* HEADER */}
 
           <div className="mb-6 flex items-start justify-between gap-4 sm:mb-8">
             <div className="min-w-0">
-
               <div className="mb-2 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
 
@@ -594,7 +647,6 @@ export default function Dashboard() {
                   ? `, ${user.name.split(" ")[0]}`
                   : ""}
                 .
-
                 <br />
 
                 <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
@@ -603,9 +655,9 @@ export default function Dashboard() {
               </h1>
 
               <p className="mt-2 max-w-xl text-sm leading-5 text-neutral-500 sm:text-[15px]">
-                Discover opportunities that match
-                your skills, experience, and career
-                goals.
+                Discover opportunities that
+                match your skills, experience,
+                and career goals.
               </p>
             </div>
 
@@ -622,10 +674,7 @@ export default function Dashboard() {
 
           {error && (
             <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm text-red-600">
-              <AlertCircle
-                size={17}
-                className="mt-0.5 shrink-0"
-              />
+              <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-red-500" />
 
               <p>{error}</p>
             </div>
@@ -636,7 +685,6 @@ export default function Dashboard() {
           {!loading && jobs.length > 0 && (
             <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-violet-600 to-indigo-600 p-4 text-white shadow-lg shadow-violet-100 sm:mb-8 sm:p-5">
               <div className="flex items-center gap-3">
-
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
                   <Sparkles size={19} />
                 </div>
@@ -648,8 +696,9 @@ export default function Dashboard() {
                   </p>
 
                   <p className="mt-0.5 text-xs text-violet-100">
-                    We've selected these jobs based on
-                    your resume and skills.
+                    We've selected these jobs
+                    based on your resume and
+                    skills.
                   </p>
                 </div>
 
@@ -667,7 +716,6 @@ export default function Dashboard() {
           {/* STATS */}
 
           <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 lg:mb-10">
-
             <StatCard
               label="Matching Jobs"
               value={jobs.length}
@@ -694,14 +742,12 @@ export default function Dashboard() {
               description="90%+ compatibility"
               loading={loading}
             />
-
           </div>
 
           {/* RECOMMENDATIONS HEADER */}
 
           <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
             <div className="min-w-0">
-
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
                   Top Recommendations
@@ -729,7 +775,6 @@ export default function Dashboard() {
           {/* JOB LIST */}
 
           <div className="space-y-3 sm:space-y-4">
-
             {loading && (
               <>
                 <JobCardSkeleton />
@@ -738,46 +783,58 @@ export default function Dashboard() {
               </>
             )}
 
-            {!loading && jobs.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-5 py-12 text-center sm:py-16">
+            {!loading &&
+              jobs.length === 0 && (
+                <div className="rounded-2xl border border-dashed border-neutral-200 bg-white px-5 py-12 text-center sm:py-16">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
+                    <Briefcase size={24} />
+                  </div>
 
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
-                  <Briefcase size={24} />
+                  <h3 className="mt-5 text-base font-bold text-neutral-900 sm:text-lg">
+                    No recommendations yet
+                  </h3>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-neutral-500">
+                    Upload your resume or update
+                    your profile to receive
+                    personalized job
+                    recommendations.
+                  </p>
+
+                  <Link
+                    to="/resume"
+                    className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700"
+                  >
+                    <Upload size={15} />
+                    Upload Resume
+                  </Link>
                 </div>
-
-                <h3 className="mt-5 text-base font-bold text-neutral-900 sm:text-lg">
-                  No recommendations yet
-                </h3>
-
-                <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-neutral-500">
-                  Upload your resume or update your
-                  profile to receive personalized job
-                  recommendations.
-                </p>
-
-                <Link
-                  to="/resume"
-                  className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700"
-                >
-                  <Upload size={15} />
-                  Upload Resume
-                </Link>
-              </div>
-            )}
+              )}
 
             {!loading &&
               topJobs.map((job) => (
                 <JobCard
                   key={`${job.platform}:${job.jobKey}`}
                   job={job}
-                  onApplicationCreated={({ job }) => {
+                  onApplicationCreated={({
+                    job,
+                  }) => {
                     setApplicationError("");
-                    setPendingApplication(job);
-                    setShowConfirmModal(true);
+
+                    setApplicationSubmitting(
+                      false
+                    );
+
+                    setPendingApplication(
+                      job
+                    );
+
+                    setShowConfirmModal(
+                      true
+                    );
                   }}
                 />
               ))}
-
           </div>
 
           {/* VIEW ALL */}
@@ -800,21 +857,17 @@ export default function Dashboard() {
               />
             </Link>
           )}
-
         </main>
 
-        {/* =================================================
+        {/* =====================================================
             SIDEBAR
-        ================================================= */}
+        ===================================================== */}
 
         <aside className="w-full shrink-0 border-t border-neutral-200 bg-white px-4 py-5 sm:px-6 sm:py-6 lg:w-80 lg:border-l lg:border-t-0 lg:px-6 lg:py-8">
-
           {/* RESUME CARD */}
 
           <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-
             <div className="mb-5 flex items-center justify-between">
-
               <div>
                 <p className="text-sm font-bold text-neutral-900">
                   Resume Strength
@@ -828,13 +881,11 @@ export default function Dashboard() {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
                 <FileText size={17} />
               </div>
-
             </div>
 
             {resumeScore == null ? (
               <>
                 <div className="rounded-xl bg-neutral-50 p-4">
-
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-neutral-400 shadow-sm">
                     <Upload size={17} />
                   </div>
@@ -847,7 +898,6 @@ export default function Dashboard() {
                     Upload your resume to unlock
                     personalized matching.
                   </p>
-
                 </div>
 
                 <Link
@@ -861,7 +911,6 @@ export default function Dashboard() {
             ) : (
               <>
                 <div className="flex items-center gap-4 rounded-xl bg-neutral-50 p-4">
-
                   <ScoreRing
                     score={resumeScore}
                     size={64}
@@ -878,7 +927,6 @@ export default function Dashboard() {
                       ATS Resume Score
                     </p>
                   </div>
-
                 </div>
 
                 <p className="mt-3 text-xs leading-5 text-neutral-500">
@@ -894,15 +942,11 @@ export default function Dashboard() {
                 </Link>
               </>
             )}
-
           </div>
 
-          {/* =================================================
-              SUPPORT / QUICK ACTIONS
-          ================================================= */}
+          {/* HELP */}
 
           <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
-
             <div className="mb-4">
               <p className="text-sm font-bold text-neutral-900">
                 Need help?
@@ -914,7 +958,6 @@ export default function Dashboard() {
             </div>
 
             <div className="space-y-2.5">
-
               {/* FEEDBACK */}
 
               <button
@@ -952,14 +995,12 @@ export default function Dashboard() {
                   Contact Support
                 </a>
               )}
-
             </div>
           </div>
 
           {/* TRUST CARD */}
 
           <div className="mt-4 hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 lg:block">
-
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm">
               <CheckCircle2 size={17} />
             </div>
@@ -972,15 +1013,13 @@ export default function Dashboard() {
               Focus your time on jobs where your
               profile has the strongest match.
             </p>
-
           </div>
-
         </aside>
       </div>
 
-      {/* =====================================================
+      {/* =======================================================
           APPLICATION CONFIRMATION MODAL
-      ===================================================== */}
+      ======================================================= */}
 
       {showConfirmModal && (
         <div
@@ -988,21 +1027,20 @@ export default function Dashboard() {
           onClick={(event) => {
             if (
               event.target ===
-              event.currentTarget
+                event.currentTarget &&
+              !applicationSubmitting
             ) {
               handleNotYet();
             }
           }}
         >
-          <div className="w-full max-w-[420px] overflow-hidden rounded-2xl bg-white shadow-2xl">
-
+          <div className="w-full max-w-[525px] overflow-hidden rounded-2xl bg-white shadow-2xl">
             {/* HEADER */}
 
             <div className="flex items-start justify-between border-b border-neutral-100 px-5 py-4 sm:px-6">
-
               <div>
-                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                  <CheckCircle2 size={18} />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                  <CheckCircle2 size={19} />
                 </div>
 
                 <h2 className="text-lg font-bold text-neutral-900">
@@ -1013,30 +1051,27 @@ export default function Dashboard() {
               <button
                 onClick={handleNotYet}
                 disabled={
-                  isSubmittingApplication
+                  applicationSubmitting
                 }
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Close"
               >
-                <X size={17} />
+                <X size={18} />
               </button>
-
             </div>
 
             {/* BODY */}
 
             <div className="px-5 py-5 sm:px-6">
-
               <p className="text-sm leading-5 text-neutral-500">
-                We'll update your application tracker
-                based on your answer.
+                We'll update your application
+                tracker based on your answer.
               </p>
 
               {/* JOB */}
 
               {pendingApplication?.title && (
-                <div className="mt-4 rounded-xl bg-neutral-50 p-3.5">
-
+                <div className="mt-4 rounded-xl bg-neutral-50 p-4">
                   <p className="truncate text-sm font-semibold text-neutral-800">
                     {pendingApplication.title}
                   </p>
@@ -1047,34 +1082,42 @@ export default function Dashboard() {
                     </p>
                   )}
 
+                  {pendingApplication.platform && (
+                    <p className="mt-2 text-[11px] font-medium text-neutral-400">
+                      {pendingApplication.platform}
+                    </p>
+                  )}
                 </div>
               )}
 
-              {/* API ERROR */}
+              {/* APPLICATION ERROR */}
 
               {applicationError && (
-                <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3">
-
+                <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3.5">
                   <AlertCircle
-                    size={16}
-                    className="mt-0.5 shrink-0 text-red-600"
+                    size={17}
+                    className="mt-0.5 shrink-0 text-red-500"
                   />
 
-                  <p className="text-sm font-medium leading-5 text-red-600">
-                    {applicationError}
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-red-600">
+                      Failed to create application.
+                    </p>
 
+                    <p className="mt-1 break-words text-xs leading-5 text-red-500">
+                      {applicationError}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* BUTTONS */}
 
               <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
-
                 <button
                   onClick={handleNotYet}
                   disabled={
-                    isSubmittingApplication
+                    applicationSubmitting
                   }
                   className="w-full rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
@@ -1084,37 +1127,29 @@ export default function Dashboard() {
                 <button
                   onClick={handleApplied}
                   disabled={
-                    isSubmittingApplication
+                    applicationSubmitting
                   }
-                  className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition sm:w-auto ${
-                    isSubmittingApplication
-                      ? "cursor-not-allowed bg-violet-400"
-                      : "bg-violet-600 shadow-violet-200 hover:bg-violet-700"
-                  }`}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
-                  {isSubmittingApplication ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2
-                        size={15}
-                        className="animate-spin"
-                      />
+                  {applicationSubmitting ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+
                       Saving...
-                    </span>
+                    </>
                   ) : (
                     "Yes, I Applied"
                   )}
                 </button>
-
               </div>
-
             </div>
           </div>
         </div>
       )}
 
-      {/* =====================================================
+      {/* =======================================================
           FEEDBACK MODAL
-      ===================================================== */}
+      ======================================================= */}
 
       {showFeedbackModal && (
         <FeedbackModal

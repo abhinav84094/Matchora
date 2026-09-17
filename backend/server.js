@@ -62,7 +62,7 @@ app.get("/", (req, res)=>{
 
 app.listen(process.env.PORT, async ()=>{
     await DBconnection();
-    startJobScraper();
-    startCleanupCron();
+    // startJobScraper();
+    // startCleanupCron();
     console.log(`Server is started on PORT ${process.env.PORT}`)
 })

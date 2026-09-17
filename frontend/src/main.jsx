@@ -10,6 +10,9 @@ import { ResumeProvider } from "./context/ResumeContext.jsx";
 import "./index.css";
 import "./responsive-fixes.css"
 
+import { registerSW } from 'virtual:pwa-register'
+registerSW({ immediate: true })
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider
