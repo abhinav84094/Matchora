@@ -96,6 +96,8 @@ export default function Recommendations() {
     hasPreviousPage: false,
   });
 
+  const [isPro, setIsPro] = useState(false);
+
   // Load existing applications once so we can mark already-applied jobs
   // as "Applied" even after a refresh, instead of re-fetching per card.
   const appliedKeysRef = useRef(new Set());
@@ -161,6 +163,7 @@ export default function Recommendations() {
             (job) => !appliedKeysRef.current.has(jobKeyOf(job))
           );
           setJobs(filteredJobs);
+          setIsPro(data.isPro);   
           setPagination({
             totalJobs: data.totalJobs,
             totalPages: data.totalPages,
@@ -288,30 +291,63 @@ const handleNotYet = () => {
         </div>
       )}
 
-      {!loading && !error && jobs.length > 0 && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={!pagination.hasPreviousPage}
-            className="text-sm font-medium px-4 py-2 rounded-lg border border-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-neutral-300"
-          >
-            Previous
-          </button>
-
-          <span className="text-xs text-neutral-400">
-            Page {page} of {pagination.totalPages}
-          </span>
-
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!pagination.hasNextPage}
-            className="text-sm font-medium px-4 py-2 rounded-lg border border-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-neutral-300"
-          >
-            Next
-          </button>
+      {!loading && !isPro && jobs.length >= 5 && (
+      <div className="mt-6 rounded-xl border border-violet-200 
+                      bg-violet-50 p-6 text-center">
+        <div className="w-10 h-10 rounded-full bg-violet-100 
+                        flex items-center justify-center mx-auto mb-3">
+          <Sparkles size={18} className="text-violet-600" />
         </div>
-      )}
+        <h3 className="font-semibold text-violet-800 mb-1">
+          You've seen your free recommendations!
+        </h3>
+        <p className="text-sm text-violet-600 mb-4">
+          Upgrade to Pro to unlock unlimited job matches, 
+          all platforms and study support.
+        </p>
+        <div className="flex flex-col items-center gap-2">
+          <a  
+            href="/pricing"
+            className="bg-violet-600 text-white px-6 py-2.5 
+                      rounded-lg text-sm font-semibold 
+                      hover:bg-violet-700 transition-colors"
+          >
+            Upgrade to Pro — ₹59/month
+          </a>
+          <p className="text-xs text-violet-400">
+            Or ₹399/year — save 43%
+          </p>
+        </div>
+      </div>
+    )}
 
+      {/* Only show pagination for Pro users */}
+    {!loading && !error && jobs.length > 0 && 
+    pagination.totalPages > 1 && isPro && (  
+      <div className="flex items-center justify-between mt-6">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={!pagination.hasPreviousPage}
+          className="text-sm font-medium px-4 py-2 rounded-lg 
+                    border border-neutral-200 disabled:opacity-40 
+                    disabled:cursor-not-allowed hover:border-neutral-300"
+        >
+          Previous
+        </button>
+        <span className="text-xs text-neutral-400">
+          Page {page} of {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!pagination.hasNextPage}
+          className="text-sm font-medium px-4 py-2 rounded-lg 
+                    border border-neutral-200 disabled:opacity-40 
+                    disabled:cursor-not-allowed hover:border-neutral-300"
+        >
+          Next
+        </button>
+      </div>
+    )}
 
       {showConfirmModal && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -346,6 +382,11 @@ const handleNotYet = () => {
     </div>
   </div>
 )}
+
+
+  
+
+
     </main>
   );
 }

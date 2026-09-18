@@ -38,6 +38,22 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    plan: {
+        type: String,
+        enum: ["free", "pro"],
+        default: "free",
+      },
+
+      planExpiresAt: {
+        type: Date,
+        default: null,
+      },
+
+      razorpayCustomerId: {
+        type: String,
+        default: null,
+      },
+
     preferences: {
       preferredRoles: [
         {

@@ -260,16 +260,13 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
         ...new Set(resume.skills.map(getCanonicalSkill)),
     ];
 
+
     const jobs = await Job.find({
         status: "active",
-        requiredSkills: {
-            $in: canonicalResumeSkills,
-        },
+        requiredSkills: { $in: canonicalResumeSkills },
     })
-    .sort({
-        postedDate: -1,
-    })
-    .limit(2000)
+    .sort({ postedDate: -1 })
+    .limit(1000)            
     .lean();
 
     const scoredJobs = jobs
@@ -335,13 +332,9 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
             };
 
         })
-
-        // Show only jobs with 50%+ skill match
         .filter(job => job.skillScore >= MIN_SKILL_SCORE &&
                         job.eligibility.experience.eligible )
-
         .sort((a, b) => {
-
             if (
                 a.eligibility.experience.eligible !==
                 b.eligibility.experience.eligible

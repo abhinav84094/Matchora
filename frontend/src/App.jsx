@@ -11,6 +11,8 @@ import Profile from "./pages/Profile.jsx";
 import Applications from "./pages/Applicatons.jsx";
 import AboutMatchora from "./pages/AboutMatchora.jsx";
 import Privacy from "./pages/Privacy.jsx";
+import Pricing from "./pages/Pricing.jsx";
+
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
 
@@ -20,6 +22,7 @@ export default function App() {
       <Route path="/" element={<Login />} />
       <Route path="/aboutMatchora" element={<AboutMatchora/>}/>
       <Route path="/privacy" element={<Privacy/>} />
+      <Route path="/pricing" element={<Pricing />} />
 
       <Route
         element={

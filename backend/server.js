@@ -13,6 +13,8 @@ import { startCleanupCron } from "./cron/cleanupJobsCron.js";
 import fs from "fs";
 import {apiLimiter, authLimiter} from "./middleware/Ratelimiters.js"
 import helmet from "helmet";
+import paymentRouter from "./routes/payment.js";
+
 
 
 dotenv.config();
@@ -47,6 +49,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobRoutes)
 app.use("/api/feedback", feedbackRoutes)
 app.use("/api/admin", adminRoutes)
+app.use("/api/payment", paymentRouter);
 
 app.get("/", (req, res)=>{
     res.send("this is home page")
