@@ -70,44 +70,38 @@ export const calculateSkillScore = (
     jobSkills = []
 ) => {
 
-    const normalizedResume =
-        resumeSkills.map(getCanonicalSkill);
+    // const normalizedResume =
+    //     resumeSkills.map(getCanonicalSkill);
 
-    const normalizedJob =
-        jobSkills.map(getCanonicalSkill);
+    // const normalizedJob =
+    //     jobSkills.map(getCanonicalSkill);
 
     const matchedSkills = [];
     const missingSkills = [];
 
-    normalizedJob.forEach((skill, index) => {
+    const resumeSkillSet = new Set(resumeSkills);
 
-        if (normalizedResume.includes(skill)) {
+    jobSkills.forEach((skill) => {
 
-            matchedSkills.push(jobSkills[index]);
-
+        if (resumeSkillSet.has(skill)) {
+            matchedSkills.push(skill);
         } else {
-
-            missingSkills.push(jobSkills[index]);
-
+            missingSkills.push(skill);
         }
 
     });
 
     const score =
-        normalizedJob.length === 0
+        jobSkills.length === 0
             ? 0
             : Math.round(
-                (matchedSkills.length / normalizedJob.length) * 100
+                (matchedSkills.length / jobSkills.length) * 100
             );
 
     return {
-
         score,
-
         matchedSkills,
-
         missingSkills
-
     };
 
 };
@@ -257,7 +251,7 @@ const MIN_SKILL_SCORE =  Number(process.env.MIN_SKILL_SCORE) || 50;
 export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
 
     const canonicalResumeSkills = [
-        ...new Set(resume.skills.map(getCanonicalSkill)),
+        ...new Set(resume.skills),
     ];
 
 
@@ -266,8 +260,11 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
         requiredSkills: { $in: canonicalResumeSkills },
     })
     .sort({ postedDate: -1 })
-    .limit(1000)            
+    .limit(200)            
     .lean();
+
+
+    const userMonths = calculateTotalExperienceMonths( resume.experience );
 
     const scoredJobs = jobs
 
@@ -279,13 +276,6 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
                     resume.skills,
 
                     job.requiredSkills
-
-                );
-
-            const userMonths =
-                calculateTotalExperienceMonths(
-
-                    resume.experience
 
                 );
 
@@ -335,19 +325,7 @@ export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
         .filter(job => job.skillScore >= MIN_SKILL_SCORE &&
                         job.eligibility.experience.eligible )
         .sort((a, b) => {
-            if (
-                a.eligibility.experience.eligible !==
-                b.eligibility.experience.eligible
-            ) {
-
-                return Number(
-                    b.eligibility.experience.eligible
-                ) - Number(
-                    a.eligibility.experience.eligible
-                );
-
-            }
-
+        
             if (b.skillScore !== a.skillScore) {
 
                 return b.skillScore - a.skillScore;

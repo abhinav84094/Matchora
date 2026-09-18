@@ -361,7 +361,7 @@ export default function Dashboard() {
      STATS
   ========================================================= */
 
-  const topJobs = jobs.slice(0, 3);
+  const topJobs = jobs.slice(0, 0);
 
   const appliedCount =
     applications.filter(
@@ -373,7 +373,7 @@ export default function Dashboard() {
     jobs.filter(
       (job) =>
         (job.fitScore || job.skillScore || 0) >=
-        90
+        80
     ).length;
 
   /* =========================================================
@@ -691,7 +691,7 @@ export default function Dashboard() {
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">
-                    {jobs.length} opportunities match
+                    {jobs.length}+ opportunities match
                     your profile
                   </p>
 
@@ -718,7 +718,7 @@ export default function Dashboard() {
           <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 lg:mb-10">
             <StatCard
               label="Matching Jobs"
-              value={jobs.length}
+              value={`${jobs.length}+`}
               icon={Briefcase}
               iconClass="bg-violet-50 text-violet-600"
               description="Jobs matching your profile"

@@ -301,7 +301,7 @@ export default function JobCard({
             onClick={handleApply}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700 active:scale-[0.99] sm:w-auto sm:text-sm"
           >
-            Apply on LinkedIn
+            Apply
 
             <ExternalLink size={13} />
           </button>
@@ -674,7 +674,7 @@ export default function JobCard({
                   onClick={handleApply}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-100 transition hover:bg-violet-700 active:scale-[0.99]"
                 >
-                  Apply on LinkedIn
+                  Apply
 
                   <ExternalLink size={15} />
                 </button>
