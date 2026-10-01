@@ -14,7 +14,8 @@ import fs from "fs";
 import {apiLimiter, authLimiter} from "./middleware/Ratelimiters.js"
 import helmet from "helmet";
 import paymentRouter from "./routes/payment.js";
-
+import { seedSkillResources } from "./services/seedService.js";
+import studyRouter from "./routes/study.js";
 
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.use("/api/jobs", jobRoutes)
 app.use("/api/feedback", feedbackRoutes)
 app.use("/api/admin", adminRoutes)
 app.use("/api/payment", paymentRouter);
+app.use("/api/study", studyRouter);
 
 app.get("/", (req, res)=>{
     res.send("this is home page")
@@ -65,6 +67,8 @@ app.get("/", (req, res)=>{
 
 app.listen(process.env.PORT, async ()=>{
     await DBconnection();
+
+    // await seedSkillResources();
     // startJobScraper();
     // startCleanupCron();
     console.log(`Server is started on PORT ${process.env.PORT}`)

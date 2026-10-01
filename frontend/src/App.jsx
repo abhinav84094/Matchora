@@ -36,6 +36,7 @@ export default function App() {
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/applications" element={<Applications />} />
+        
         {/* more routes get added here as we build each page */}
       </Route>
 

@@ -4,6 +4,9 @@ import { Sparkles } from "lucide-react";
 import JobCard from "../components/JobCard.jsx"
 
 
+const monthlyRate = import.meta.env.VITE_PRO_MONTHLY_RATE || 99;
+const yearlyRate = import.meta.env.VITE_PRO_YEARLY_RATE || 999;
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -312,10 +315,10 @@ const handleNotYet = () => {
                       rounded-lg text-sm font-semibold 
                       hover:bg-violet-700 transition-colors"
           >
-            Upgrade to Pro — ₹59/month
+            Upgrade to Pro — ₹{monthlyRate}/month
           </a>
           <p className="text-xs text-violet-400">
-            Or ₹399/year — save 43%
+            Or ₹{yearlyRate}/year — save 43%
           </p>
         </div>
       </div>
