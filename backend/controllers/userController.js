@@ -4,6 +4,7 @@ import Resume from "../models/Resume.js";
 import { analyzeResume } from "../services/geminiService.js";
 import { promises as fsPromises } from "fs";
 import { getCanonicalSkill } from "../services/recommendationService.js";
+import {isProActive} from "../utils/plan.js";
 
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse/lib/pdf-parse");
@@ -26,6 +27,15 @@ export const uploadResume = async (req, res) => {
             user: req.user._id,
         });
 
+        const isPro = isProActive(req.user);
+      
+
+        if(existingResume && !isPro){
+            return res.status(403).json({
+                message:"Free me only 1 resume upload. For reupload go with Pro"
+            })
+        }
+
         if (
             existingResume &&
             existingResume.nextUploadAt &&
@@ -46,6 +56,13 @@ export const uploadResume = async (req, res) => {
         const buffer = fs.readFileSync(req.file.path);
 
         const data = await pdf(buffer);
+
+        if (!data.text || data.text.trim().length < 30) {
+            return res.status(422).json({
+                success: false,
+                message: "Could not read text from this file. Upload a text-based PDF, not a scan.",
+            });
+        }
 
         const analysis = await analyzeResume(data.text);
 
@@ -72,9 +89,7 @@ export const uploadResume = async (req, res) => {
 
                 uploadedAt: new Date(),
 
-                nextUploadAt : new Date(
-                    Date.now() + 24 * 60 * 60 * 1000
-                )
+                nextUploadAt: isPro ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
             },
             {
                 upsert: true,
@@ -90,6 +105,7 @@ export const uploadResume = async (req, res) => {
             success: true,
             message: "Resume analyzed successfully.",
             resume,
+            isPro
         });
 
     } catch (err) {
@@ -112,9 +128,8 @@ export const uploadResume = async (req, res) => {
         } catch (err) {
             console.error("Delete failed:", err);
         }
+    } 
     }
-}
-
 };
 
 
@@ -124,6 +139,9 @@ export const getResume = async (req, res) => {
         const resume = await Resume.findOne({
             user: req.user._id,
         });
+
+        const isPro =  isProActive(req.user);
+        console.log(req.user)
 
         if (!resume) {
             return res.status(404).json({
@@ -136,6 +154,7 @@ export const getResume = async (req, res) => {
             success: true,
             message: "Resume fetched successfully.",
             resume,
+            isPro
         });
 
     } catch (error) {
