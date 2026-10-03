@@ -683,34 +683,31 @@ export default function Dashboard() {
           {/* QUICK INSIGHT */}
 
           {!loading && jobs.length > 0 && (
-            <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-violet-600 to-indigo-600 p-4 text-white shadow-lg shadow-violet-100 sm:mb-8 sm:p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                  <Sparkles size={19} />
-                </div>
+          <Link
+            to="/recommendations"
+            className="mb-6 block overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-violet-600 to-indigo-600 p-4 text-white shadow-lg shadow-violet-100 transition hover:shadow-xl sm:mb-8 sm:p-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                <Sparkles size={19} />
+              </div>
 
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">
-                    {jobs.length}+ opportunities match
-                    your profile
-                  </p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">
+                  {jobs.length}+ opportunities match your profile
+                </p>
 
-                  <p className="mt-0.5 text-xs text-violet-100">
-                    We've selected these jobs
-                    based on your resume and
-                    skills.
-                  </p>
-                </div>
+                <p className="mt-0.5 text-xs text-violet-100">
+                  We've selected these jobs based on your resume and skills.
+                </p>
+              </div>
 
-                <Link
-                  to="/recommendations"
-                  className="hidden shrink-0 items-center gap-1 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-violet-600 transition hover:bg-violet-50 sm:flex"
-                >
-                  Explore
-                  <ArrowRight size={14} />
-                </Link>
+              <div className="hidden shrink-0 items-center gap-1 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-violet-600 transition hover:bg-violet-50 sm:flex">
+                Explore
+                <ArrowRight size={14} />
               </div>
             </div>
+          </Link>
           )}
 
           {/* STATS */}
@@ -864,9 +861,11 @@ export default function Dashboard() {
         ===================================================== */}
 
         <aside className="w-full shrink-0 border-t border-neutral-200 bg-white px-4 py-5 sm:px-6 sm:py-6 lg:w-80 lg:border-l lg:border-t-0 lg:px-6 lg:py-8">
+          
+          
           {/* RESUME CARD */}
 
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
+          {/* <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-neutral-900">
@@ -942,7 +941,7 @@ export default function Dashboard() {
                 </Link>
               </>
             )}
-          </div>
+          </div> */}
 
           {/* HELP */}
 

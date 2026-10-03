@@ -16,11 +16,11 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
   const navItems = [
     { to: "/dashboard",       icon: Home,          label: "Dashboard" },
-    { to: "/recommendations", icon: Search,         label: "Recommendations" },
-    { to: "/applications",    icon: ClipboardList,  label: "Applications" },
+    { to: "/recommendations", icon: Search,         label: "Jobs For You" },
+    { to: "/applications",    icon: ClipboardList,  label: "Appied Jobs" },
     { to: "/resume",          icon: FileText,       label: "Resume" },
     { to: "/profile",         icon: User,           label: "Profile" },
-    { to: "/pro",           icon: BookOpen,         label: "Pro Support",  badge: isPro ? null : "Pro",  proOnly: true,},
+    { to: "/pro",           icon: BookOpen,         label: "Study Support",  badge: isPro ? null : "Pro",  proOnly: true,},
   ];
 
   return (

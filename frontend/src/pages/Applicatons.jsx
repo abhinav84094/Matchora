@@ -7,13 +7,13 @@ const API_BASE = import.meta.env.VITE_API_URL ;
 
 // Matches the real status enum on the Application model
 const STATUS_TABS = [
-  { key: "all", label: "All" },
-  { key: "Saved", label: "Saved" },
+  // { key: "all", label: "All" },
+  // { key: "Saved", label: "Saved" },
   { key: "Applied", label: "Applied" },
-  { key: "Viewed", label: "Viewed" },
-  { key: "Interview", label: "Interview" },
-  { key: "Offer", label: "Offer" },
-  { key: "Rejected", label: "Rejected" },
+  // { key: "Viewed", label: "Viewed" },
+  // { key: "Interview", label: "Interview" },
+  // { key: "Offer", label: "Offer" },
+  // { key: "Rejected", label: "Rejected" },
 ];
 
 const STATUS_STYLES = {
