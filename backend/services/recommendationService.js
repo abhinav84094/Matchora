@@ -248,21 +248,39 @@ export const calculateExperienceEligibility = (
 
 const MIN_SKILL_SCORE =  Number(process.env.MIN_SKILL_SCORE) || 50;
 
-export const recommendJobs = async (resume, { page = 1, limit = 25 } = {}) => {
+export const recommendJobs = async (resume,isPro, platform, { page = 1, limit = 25 } = {}) => {
 
     const canonicalResumeSkills = [
         ...new Set(resume.skills),
     ];
 
+    const lim = isPro ? 500 : 100;
 
-    const jobs = await Job.find({
+    const query = {
         status: "active",
         requiredSkills: { $in: canonicalResumeSkills },
-    })
-    .sort({ postedDate: -1 })
-    .limit(200)            
-    .lean();
+    };
 
+    var jobs = [];
+
+    if(platform === "all") {
+        jobs = await Job.find(query)
+        .sort({ postedDate: -1 })
+        .limit(lim)            
+        .lean();
+    }
+    else{
+        if (platform && platform !== "all") {
+            query.platform = platform;  // ← filter by platform
+        }
+
+        jobs = await Job.find(query)
+        .sort({ postedDate: -1 })
+        .limit(lim)            
+        .lean();
+    }
+
+    
 
     const userMonths = calculateTotalExperienceMonths( resume.experience );
 

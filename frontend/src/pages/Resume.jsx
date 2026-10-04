@@ -169,8 +169,6 @@ function UploadZone({ onUploaded }) {
 export default function Resume() {
   const { resume, loading, setResume, isPro, setIsPro } = useResume();
 
-  console.log(isPro);
-
   const [uploading, setUploading] = useState(false);
   const [nextUploadAt, setNextUploadAt] = useState(
     resume?.nextUploadAt || null

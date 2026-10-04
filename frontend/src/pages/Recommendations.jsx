@@ -99,6 +99,8 @@ export default function Recommendations() {
     hasPreviousPage: false,
   });
 
+  const [activePlatform, setActivePlatform] = useState("linkedin");
+
   const [isPro, setIsPro] = useState(false);
 
   // Load existing applications once so we can mark already-applied jobs
@@ -157,7 +159,7 @@ export default function Recommendations() {
       setError(null);
       try {
         const res = await fetch(
-          `${API_URL}/api/jobs/recommendations?page=${page}&limit=${PAGE_SIZE}`,
+          `${API_URL}/api/jobs/recommendations?page=${page}&limit=${PAGE_SIZE}&platform=${activePlatform}`,
           { credentials: "include" }
         );
         const data = await res.json();
@@ -188,7 +190,7 @@ export default function Recommendations() {
     // Intentionally NOT depending on appliedKeys — applying to a job
     // updates local state only (see markApplied) and must not
     // re-trigger a recommendations fetch.
-  }, [activeRole, page]);
+  }, [activeRole, page, activePlatform]);
 
 
 const handleApplied = async () => {
@@ -277,6 +279,36 @@ const handleNotYet = () => {
 
       {!loading && !error && resume && jobs.length === 0 && (
         <p className="text-sm text-neutral-400 py-8 text-center">No jobs found for this role right now.</p>
+      )}
+
+
+      {isPro && (
+        <div style={{
+          display: "flex",
+          gap: "8px",
+          overflowX: "auto",
+          paddingBottom: "4px",
+          marginBottom: "16px",
+          scrollbarWidth: "none",
+        }}>
+          {["all", "linkedin", "indeed", "naukri", "add", "others"].map(p => (
+            <button
+              key={p}
+              onClick={() => {
+                setActivePlatform(p);
+                setPage(1);  // ← reset to page 1 on filter change
+              }}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium 
+                          whitespace-nowrap border transition-colors ${
+                activePlatform === p
+                  ? "bg-violet-600 text-white border-violet-600"
+                  : "bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300"
+              }`}
+            >
+              {p === "all" ? "All" : p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>
+          ))}
+        </div>
       )}
 
       {!loading && (

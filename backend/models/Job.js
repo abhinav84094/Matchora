@@ -33,6 +33,8 @@ const jobSchema = new mongoose.Schema(
                 "indeed",
                 "internshala",
                 "foundit",
+                "add",
+                "others"
             ],
             default: "linkedin",
         },

@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import Job from "../models/Job.js";
+import Application from "../models/Application.js"
 
 const ACTIVE_DAYS = 20;
 const DELETE_AFTER_EXPIRED_DAYS = 50;
@@ -84,7 +85,7 @@ const deleteExpiredJobs = async () => {
 
             status: "expired",
 
-            expirstaedAt: {
+            expiredAt: {
 
                 $lt: thirtyDaysAgo,
 

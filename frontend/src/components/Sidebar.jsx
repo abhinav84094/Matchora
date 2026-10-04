@@ -20,7 +20,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     { to: "/applications",    icon: ClipboardList,  label: "Appied Jobs" },
     { to: "/resume",          icon: FileText,       label: "Resume" },
     { to: "/profile",         icon: User,           label: "Profile" },
-    { to: "/pro",           icon: BookOpen,         label: "Study Support",  badge: isPro ? null : "Pro",  proOnly: true,},
+    // { to: "/pro",           icon: BookOpen,         label: "Study Support",  badge: isPro ? null : "Pro",  proOnly: true,},
   ];
 
   return (

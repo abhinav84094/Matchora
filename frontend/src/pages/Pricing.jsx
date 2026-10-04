@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const FREE_FEATURES = [
   "5 job recommendations",
-  "2 resume uploads",
+  "1 resume uploads",
   "Basic application tracker",
   "Skill gap analysis",
   "1 platform",
