@@ -5,6 +5,8 @@ import {
   Crown, Clock, ShieldCheck, AlertTriangle, Check,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import Pricing from "./Pricing.jsx";
+
 
 const API_BASE = import.meta.env.VITE_API_URL;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -117,29 +119,37 @@ function PlanCard({ plan }) {
         {expired && (
           <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-            <span>Your Pro plan ended on {formatDate(expiresAt)}. Renew to get your Pro benefits back.</span>
+            <span>
+              Your Pro plan ended on {formatDate(expiresAt)}. Renew to get your Pro benefits back.
+            </span>
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <p className="text-base font-semibold text-neutral-900">Free plan</p>
-        </div>
+        <p className="text-base font-semibold text-neutral-900">Free plan</p>
         <p className="mt-1 text-sm text-neutral-500">
-          You can re-upload your resume once every 4 days.
+          Includes 1 resume upload. Replacing it needs Pro.
         </p>
 
-        <ul className="mt-4 space-y-2 text-sm text-neutral-700">
-          {[
-            "Re-upload your resume every 24 hours",
-            "Priority support",
-            "Higher application limits",
-          ].map((item) => (
-            <li key={item} className="flex items-center gap-2">
-              <Check size={15} className="shrink-0 text-violet-600" />
-              {item}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-5 border-t border-neutral-100 pt-4">
+          <p className="text-sm font-medium text-neutral-900">With Pro you get:</p>
+
+          <ul className="mt-3 space-y-2 text-sm text-neutral-700">
+            {[
+              "Unlimited job recommendations",
+              "Unlimited resume uploads",
+              "Basic application tracker",
+              "Skill gap analysis",
+              "All platforms",
+              "Study support for skill gaps",
+              "Priority support",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <Check size={15} className="shrink-0 text-violet-600" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <Link
           to="/pricing"
@@ -283,6 +293,7 @@ export default function Profile() {
   }
 
   const plan = getPlan(user);
+  
   const signInMethod =
     user?.provider === "google" ? "Google" : user?.provider ? user.provider : null;
 

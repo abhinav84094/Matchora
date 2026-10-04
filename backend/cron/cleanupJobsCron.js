@@ -1,8 +1,8 @@
 import cron from "node-cron";
 import Job from "../models/Job.js";
 
-const ACTIVE_DAYS = 4;
-const DELETE_AFTER_EXPIRED_DAYS = 30;
+const ACTIVE_DAYS = 20;
+const DELETE_AFTER_EXPIRED_DAYS = 50;
 
 /**
  * Mark jobs older than 10 days as expired
@@ -84,7 +84,7 @@ const deleteExpiredJobs = async () => {
 
             status: "expired",
 
-            expiredAt: {
+            expirstaedAt: {
 
                 $lt: thirtyDaysAgo,
 
@@ -110,6 +110,61 @@ const deleteExpiredJobs = async () => {
 
 };
 
+
+
+
+
+
+
+/**
+ * Delete expired applications after 30 days
+ */
+
+
+
+const deleteExpiredApplications = async () => {
+
+    console.log("====================================");
+    console.log("Deleting Old Expired Application...");
+    console.log("====================================");
+
+    try {
+
+        const NinetyDaysAgo = new Date();
+
+        const DELETE_AFTER_DAYS = 90;
+
+        NinetyDaysAgo.setDate(
+            NinetyDaysAgo.getDate() - DELETE_AFTER_DAYS 
+        );
+
+        const result = await Application.deleteMany({
+            "statusHistory.updatedAt": {
+                $lt: NinetyDaysAgo,
+            },
+        });
+
+        console.log(
+            `Deleted Jobs : ${result.deletedCount}`
+        );
+    }
+
+    catch (err) {
+        console.log(err.message);
+    }
+
+    console.log("====================================");
+    console.log("Delete Finished");
+    console.log("====================================");
+};
+
+
+
+
+
+
+
+
 /**
  * Start Cleanup Scheduler
  */
@@ -123,7 +178,7 @@ export const startCleanupCron = () => {
      */
     cron.schedule(
 
-        "30 20 * * *",
+        "30 2 * * *",
 
         async () => {
 
@@ -139,14 +194,24 @@ export const startCleanupCron = () => {
      */
     cron.schedule(
 
-        "15 8 * * *",
+        "15 2 * * *",
 
         async () => {
 
             await deleteExpiredJobs();
 
+            await deleteExpiredApplications();
+
         }
 
     );
 
+
+
+    
+
 };
+
+
+
+

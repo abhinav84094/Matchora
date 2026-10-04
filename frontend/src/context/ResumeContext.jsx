@@ -8,6 +8,7 @@ export function ResumeProvider({ children }) {
   const { user } = useAuth();
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
   async function fetchResume() {
     if (!user?.resume) {
@@ -22,6 +23,7 @@ export function ResumeProvider({ children }) {
       if (res.ok) {
         const data = await res.json();
         setResume(data.success ? data.resume : null);
+        setIsPro(data.success ? Boolean(data.isPro) : false);
       }
     } catch {
       setResume(null);
@@ -35,7 +37,7 @@ export function ResumeProvider({ children }) {
   }, [user?.resume]);
 
   return (
-    <ResumeContext.Provider value={{ resume, loading, refetch: fetchResume, setResume }}>
+    <ResumeContext.Provider value={{ resume, loading, refetch: fetchResume, setResume, isPro, setIsPro }}>
       {children}
     </ResumeContext.Provider>
   );

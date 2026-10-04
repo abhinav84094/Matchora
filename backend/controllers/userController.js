@@ -141,7 +141,6 @@ export const getResume = async (req, res) => {
         });
 
         const isPro =  isProActive(req.user);
-        console.log(req.user)
 
         if (!resume) {
             return res.status(404).json({
