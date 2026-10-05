@@ -12,6 +12,7 @@ import Applications from "./pages/Applicatons.jsx";
 import AboutMatchora from "./pages/AboutMatchora.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import Pricing from "./pages/Pricing.jsx";
+import JobManagement from "./pages/JobManagement.jsx";
 
 
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard.jsx"));
@@ -58,6 +59,27 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+
+      <Route
+        path="/admin/jobs"
+        element={
+          <ProtectedRoute>
+            <AdminRoute>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center text-sm text-neutral-400">
+                    Loading...
+                  </div>
+                }
+              >
+                <JobManagement />
+              </Suspense>
+            </AdminRoute>
+          </ProtectedRoute>
+        }
+      />
     </Routes>
+
   );
 }

@@ -7,6 +7,8 @@ import {
   Users, UserCheck, Briefcase, ClipboardList, FileText,
   MessageSquare, Star, TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -24,6 +26,9 @@ export default function AdminDashboard() {
   const [feedbackStats, setFeedbackStats] = useState(null);
   const [error, setError] = useState("");
 
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     Promise.all([
       getJSON("/api/admin/kpis").then((d) => setKpis(d.kpis)),
@@ -35,8 +40,24 @@ export default function AdminDashboard() {
 
   return (
     <main className="flex-1 px-10 py-8 max-w-6xl">
-      <h1 className="text-2xl font-bold text-neutral-900">Matchora Admin Analytics</h1>
-      <p className="text-sm text-neutral-400 mt-1">Internal, admin-only view.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">
+            Matchora Admin Analytics
+          </h1>
+
+          <p className="text-sm text-neutral-400 mt-1">
+            Internal, admin-only view.
+          </p>
+        </div>
+
+        <button
+          onClick={() => navigate("/admin/jobs")}
+          className="px-4 py-2 rounded-lg bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-800 transition"
+        >
+          Job Management
+        </button>
+      </div>
 
       {error && (
         <div className="mt-6 rounded-xl border border-red-100 bg-red-50 text-red-600 text-sm px-4 py-3">

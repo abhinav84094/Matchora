@@ -160,3 +160,58 @@ export const getFeedbackStats = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to load feedback stats." });
   }
 };
+
+
+
+
+
+// GET /api/admin/jobs
+export const getAdminJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find({ status: "active" })
+      .sort({ postedDate: -1 })
+      .select(
+        "_id title company location platform jobUrl postedDate requiredSkills requiredExperienceMonths status"
+      )
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      jobs,
+    });
+  } catch (err) {
+    console.error("getAdminJobs error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load jobs.",
+    });
+  }
+};
+
+// DELETE /api/admin/jobs/:id
+export const deleteJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedJob = await Job.findByIdAndDelete(id);
+
+    if (!deletedJob) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Job deleted successfully.",
+      jobId: deletedJob._id,
+    });
+  } catch (err) {
+    console.error("deleteJob error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete job.",
+    });
+  }
+};

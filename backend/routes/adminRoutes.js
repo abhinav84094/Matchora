@@ -7,6 +7,8 @@ import {
   getGrowth,
   getJobsAnalytics,
   getFeedbackStats,
+  deleteJob,
+  getAdminJobs
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -18,5 +20,9 @@ router.get("/kpis", getKPIs);
 router.get("/growth", getGrowth);
 router.get("/jobs-analytics", getJobsAnalytics);
 router.get("/feedback-stats", getFeedbackStats);
+router.delete("/jobs/:id", deleteJob);
+router.get("/jobs", getAdminJobs);
+
+
 
 export default router;
