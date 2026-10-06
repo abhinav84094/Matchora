@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react";
+import InstallButton from "./InstallButton.jsx";
 
 export default function MobileTopBar({ onOpenMenu }) {
   return (
@@ -16,6 +17,9 @@ export default function MobileTopBar({ onOpenMenu }) {
           <span className="text-white text-xs font-bold">M</span>
         </div>
         <span className="font-semibold text-sm">Matchora</span>
+        <div>
+          <InstallButton />
+        </div>
       </div>
     </header>
   );

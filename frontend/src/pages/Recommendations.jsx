@@ -298,7 +298,7 @@ const handleNotYet = () => {
           "
         >
           <div className="flex gap-2 min-w-max">
-            {["all", "linkedin", "indeed", "naukri", "add", "others"].map((p) => (
+            {["all", "linkedin", "indeed", "naukri", "adzuna", "others"].map((p) => (
               <button
                 key={p}
                 onClick={() => {

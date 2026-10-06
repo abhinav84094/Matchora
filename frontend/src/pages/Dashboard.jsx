@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import JobCard from "../components/JobCard.jsx";
 import FeedbackModal from "../components/FeedbackModal.jsx";
+import InstallButton from "../components/InstallButton.jsx"
 
 import {
   Bell,
@@ -661,6 +662,7 @@ export default function Dashboard() {
               </p>
             </div>
 
+            
             <button
               title="Notifications coming soon"
               disabled
@@ -861,7 +863,7 @@ export default function Dashboard() {
         ===================================================== */}
 
         <aside className="w-full shrink-0 border-t border-neutral-200 bg-white px-4 py-5 sm:px-6 sm:py-6 lg:w-80 lg:border-l lg:border-t-0 lg:px-6 lg:py-8">
-          
+
           
           {/* RESUME CARD */}
 
@@ -943,6 +945,13 @@ export default function Dashboard() {
             )}
           </div> */}
 
+
+
+            <div className="hidden lg:flex h-9 w-30 items-center justify-center rounded-xl  text-violet-600 ">
+              <InstallButton />
+            </div>
+
+
           {/* HELP */}
 
           <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm sm:p-5">
@@ -1013,7 +1022,16 @@ export default function Dashboard() {
               profile has the strongest match.
             </p>
           </div>
+
+
+          <div className="mt-4 hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 lg:block">
+            
+          </div>
+          
         </aside>
+
+        
+
       </div>
 
       {/* =======================================================
@@ -1157,6 +1175,7 @@ export default function Dashboard() {
           }
         />
       )}
+
     </>
   );
 }
