@@ -17,8 +17,8 @@ const PRO_FEATURES = [
   "Unlimited resume uploads",
   "Basic application tracker",
   "Skill gap analysis",
-  "All platforms",
-  "Study support for skill gaps",
+  // "All platforms",
+  // "Study support for skill gaps",
   "Priority support",
 ];
 
@@ -123,7 +123,7 @@ export default function Pricing() {
           Yearly
           <span className="ml-2 text-xs bg-green-100 text-green-700 
                            px-2 py-0.5 rounded-full font-semibold">
-            Save 43%
+            Save
           </span>
         </button>
       </div>
@@ -179,14 +179,14 @@ export default function Pricing() {
 
           <div className="mb-8">
             <span className="text-4xl font-bold">
-              {billing === "monthly" ? "₹59" : "₹399"}
+              {billing === "monthly" ? "₹30" : "₹299"}
             </span>
             <span className="text-violet-200 text-sm ml-1">
               / {billing === "monthly" ? "month" : "year"}
             </span>
             {billing === "yearly" && (
               <p className="text-violet-300 text-xs mt-1">
-                ₹33/month — save ₹309/year
+                ₹25/month — save ₹66/year
               </p>
             )}
           </div>

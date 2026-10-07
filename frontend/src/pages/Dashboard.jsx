@@ -1022,11 +1022,6 @@ export default function Dashboard() {
               profile has the strongest match.
             </p>
           </div>
-
-
-          <div className="mt-4 hidden rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-5 lg:block">
-            
-          </div>
           
         </aside>
 

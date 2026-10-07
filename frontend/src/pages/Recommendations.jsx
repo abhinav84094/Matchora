@@ -371,7 +371,7 @@ const handleNotYet = () => {
             Upgrade to Pro — ₹{monthlyRate}/month
           </a>
           <p className="text-xs text-violet-400">
-            Or ₹{yearlyRate}/year — save 43%
+            Or ₹{yearlyRate}/year — save
           </p>
         </div>
       </div>

@@ -140,7 +140,7 @@ function PlanCard({ plan }) {
               "Basic application tracker",
               "Skill gap analysis",
               "All platforms",
-              "Study support for skill gaps",
+              // "Study support for skill gaps",
               "Priority support",
             ].map((item) => (
               <li key={item} className="flex items-center gap-2">

@@ -4,6 +4,7 @@ import {
   User, X, BookOpen, Sparkles,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import InstallButton from "./InstallButton.jsx"
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
@@ -89,6 +90,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
         ))}
       </nav>
 
+
+      <InstallButton />
+
       {/* Bottom section */}
       <div className="mt-auto pt-6">
 
@@ -110,7 +114,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
                          hover:bg-violet-700 text-white rounded-lg py-2 
                          transition-colors"
             >
-              Upgrade — ₹59/month
+              Upgrade — ₹30/month
             </button>
           </div>
         )}
