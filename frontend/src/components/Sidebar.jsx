@@ -106,7 +106,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
               </p>
             </div>
             <p className="text-xs text-violet-500 leading-relaxed mb-3">
-              Unlock unlimited jobs, study support and more.
+              Unlock unlimited jobs and more.
             </p>
             <button
               onClick={() => { navigate("/pricing"); onClose(); }}

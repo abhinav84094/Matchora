@@ -1,741 +1,257 @@
+import { useRef, useState } from "react";
 import {
-  Sparkles,
   ArrowRight,
-  ShieldCheck,
-  Lock,
-  BadgeCheck,
+  BriefcaseBusiness,
+  Check,
+  FileCheck2,
   FileText,
-  Target,
-  TrendingUp,
-  Send,
+  LockKeyhole,
   Search,
-  CheckCircle2,
-  Briefcase,
-
+  ShieldCheck,
+  Sparkles,
+  Target,
 } from "lucide-react";
-
 import { GoogleLogin } from "@react-oauth/google";
-import { Navigate, Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const features = [
   {
+    icon: Search,
+    title: "Discover relevant jobs",
+    description: "Explore recent opportunities and focus on roles worth your time.",
+  },
+  {
+    icon: FileCheck2,
+    title: "Understand your resume",
+    description: "See your resume analysis, skill gaps, and practical improvements.",
+  },
+  {
     icon: Target,
-    title: "Find Jobs That Fit You",
-    desc: "AI recommends jobs based on your resume and skills.",
-    color: "bg-violet-100 text-violet-600",
+    title: "Get personalized matches",
+    description: "Prioritize jobs based on the skills and experience in your resume.",
   },
   {
-    icon: FileText,
-    title: "Resume Analysis",
-    desc: "ATS score, missing keywords and improvement suggestions.",
-    color: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    icon: TrendingUp,
-    title: "Track Applications",
-    desc: "Monitor every application from one dashboard.",
-    color: "bg-orange-100 text-orange-600",
+    icon: BriefcaseBusiness,
+    title: "Stay organized",
+    description: "Keep track of the jobs you've applied to in one place.",
   },
 ];
 
+const steps = [
+  { number: "01", title: "Sign in", description: "Create your account securely with Google." },
+  { number: "02", title: "Add your resume", description: "Upload your resume to unlock personalized insights and matches." },
+  { number: "03", title: "Find your fit", description: "Review relevant opportunities and apply on the hiring site." },
+];
+
+function Brand({ compact = false }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-sm shadow-violet-200">
+        <Sparkles size={20} aria-hidden="true" />
+      </span>
+      <div>
+        <span className="block text-xl font-extrabold tracking-tight text-slate-950">
+          Match<span className="text-violet-600">ora</span>
+        </span>
+        {!compact && <span className="block text-[11px] leading-tight text-slate-500">Find your next fit</span>}
+      </div>
+    </div>
+  );
+}
+
+function ProductPreview() {
+  return (
+    <div className="relative mx-auto w-full max-w-[540px]" aria-label="Illustration of Matchora's resume matching experience">
+      <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_22px_70px_-32px_rgba(56,42,115,0.3)] sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700"><Target size={18} /></span>
+            <div>
+              <p className="text-sm font-bold text-slate-900">Your job matches</p>
+              <p className="text-xs text-slate-500">Illustrative preview</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">Resume analyzed</span>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-violet-100 bg-violet-50/60 p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-base font-bold text-slate-900">Backend Developer</p>
+              <p className="mt-1 text-sm text-slate-600">Example opportunity · Bengaluru</p>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-violet-700 shadow-sm">Strong match</span>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {['Node.js', 'Express', 'MongoDB'].map((skill) => (
+              <span key={skill} className="inline-flex items-center gap-1 rounded-lg border border-emerald-100 bg-white px-2.5 py-1.5 text-xs font-medium text-emerald-700">
+                <Check size={12} aria-hidden="true" />{skill}
+              </span>
+            ))}
+          </div>
+          <div className="mt-4 border-t border-violet-100 pt-4">
+            <p className="text-xs font-medium text-slate-500">Skill to develop</p>
+            <span className="mt-2 inline-block rounded-lg bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700">Docker</span>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-slate-100 p-4">
+            <FileText size={18} className="text-violet-600" aria-hidden="true" />
+            <p className="mt-2 text-sm font-semibold text-slate-900">Resume insights</p>
+            <p className="mt-1 text-xs text-slate-500">Skills and suggestions</p>
+          </div>
+          <div className="rounded-2xl border border-slate-100 p-4">
+            <BriefcaseBusiness size={18} className="text-violet-600" aria-hidden="true" />
+            <p className="mt-2 text-sm font-semibold text-slate-900">Applications</p>
+            <p className="mt-1 text-xs text-slate-500">Track your progress</p>
+          </div>
+        </div>
+      </div>
+      <div className="pointer-events-none absolute -z-10 -inset-5 rounded-[36px] bg-violet-100/60 blur-2xl" />
+    </div>
+  );
+}
+
 export default function Login() {
-
   const { user, loading } = useAuth();
+  const signInRef = useRef(null);
+  const [signingIn, setSigningIn] = useState(false);
+  const [authError, setAuthError] = useState("");
 
+  const scrollToSignIn = () => signInRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  if (!loading && user) {
-    return <Navigate to="/dashboard" replace />;
+  async function handleGoogleSuccess(credentialResponse) {
+    if (!credentialResponse?.credential) {
+      setAuthError("Google did not return a sign-in credential. Please try again.");
+      return;
+    }
+    setAuthError("");
+    setSigningIn(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+      if (!response.ok) throw new Error("Unable to sign in. Please try again.");
+      window.location.replace("/dashboard");
+    } catch {
+      setAuthError("Sign-in couldn't be completed. Please check your connection and try again.");
+      setSigningIn(false);
+    }
   }
 
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50 via-white to-white">
-
-      {/* NAVBAR */}
-
-      <header className="max-w-7xl mx-auto px-8 py-8 flex items-center justify-between">
-
-        <div className="flex items-center gap-3">
-
-          <div className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center shadow-lg">
-
-            <Sparkles className="text-white" size={22} />
-
+    <div className="min-h-screen overflow-x-clip bg-white text-slate-900">
+      <header className="border-b border-slate-100 bg-white/95">
+        <nav aria-label="Main navigation" className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <Brand />
+          <div className="flex items-center gap-3 sm:gap-6">
+            <Link to="/aboutMatchora" className="hidden text-sm font-medium text-slate-600 transition hover:text-violet-700 sm:inline">About</Link>
+            <Link to="/pricing" className="text-sm font-medium text-slate-600 transition hover:text-violet-700">Pricing</Link>
+            <button type="button" onClick={scrollToSignIn} className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">Get Started</button>
           </div>
-
-          <div>
-
-            <h2 className="font-bold text-2xl">
-
-              Match
-              <span className="text-violet-600">
-                ora
-              </span>
-
-            </h2>
-
-            <p className="text-xs text-neutral-500">
-              AI Powered Job Search
-            </p>
-
-          </div>
-
-        </div>
-
+        </nav>
       </header>
 
-      {/* HERO */}
-
-      <section className="max-w-7xl mx-auto px-8 py-12 grid lg:grid-cols-2 gap-16 items-center">
-
-        {/* LEFT */}
-
-        <div>
-
-          <span className="inline-flex items-center gap-2 rounded-full bg-violet-100 text-violet-700 px-5 py-2 text-sm font-semibold">
-
-            <Sparkles size={16} />
-
-            Hello Buddy
-
-          </span>
-
-          <h1 className="text-6xl font-black mt-8 leading-tight text-neutral-900">
-
-            Stop Searching.
-
-            <br />
-
-            Start
-
-            <span className="text-violet-600">
-              {" "}Matching.
-            </span>
-
-          </h1>
-
-          <p className="text-neutral-500 text-lg mt-8 leading-8 max-w-xl">
-
-            Matchora analyzes your resume, recommends
-            personalized jobs, tracks applications,
-            and helps you get hired faster.
-
-          </p>
-
-          <div className="flex gap-4 mt-10">
-
-            <button
-            onClick={() => {
-              document
-                .getElementById("login-section")
-                ?.scrollIntoView({
-                  behavior: "smooth",
-                });
-            }}
-            className="rounded-2xl bg-violet-600 hover:bg-violet-700 transition px-8 py-4 text-white font-semibold flex items-center gap-2">
-
-              Get Started
-
-              <ArrowRight size={18} />
-
-            </button>
-
-            <Link
-              to="/aboutMatchora"
-              className="
-                inline-flex
-                items-center
-                justify-center
-                rounded-2xl
-                border
-                border-neutral-200
-                bg-white
-                px-8
-                py-4
-                font-semibold
-                text-neutral-900
-                shadow-sm
-                hover:bg-violet-50
-                hover:border-violet-600
-                hover:text-violet-600
-                transition-all
-                duration-300
-              "
-            >
-              About Matchora
-            </Link>
-
+      <main>
+        <section className="relative overflow-hidden bg-gradient-to-b from-violet-50/80 via-white to-white">
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-12 px-4 pb-16 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8 lg:pb-24 lg:pt-24">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 sm:text-sm"><Sparkles size={15} aria-hidden="true" /> A smarter way to search for jobs</span>
+              <h1 className="mt-6 text-[clamp(2.5rem,5vw,4.5rem)] font-extrabold leading-[1.08] tracking-tight text-slate-950">Find jobs that <span className="text-violet-600">actually fit you.</span></h1>
+              <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">Discover opportunities, understand your strengths, and focus on roles that match your skills. Matchora brings your job search together in one place.</p>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <button type="button" onClick={scrollToSignIn} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-sm shadow-violet-200 transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">Get Started <ArrowRight size={17} aria-hidden="true" /></button>
+                <Link to="/aboutMatchora" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-violet-200 hover:text-violet-700">How Matchora works</Link>
+              </div>
+              <p className="mt-5 flex items-center gap-2 text-xs text-slate-500 sm:text-sm"><ShieldCheck size={16} className="shrink-0 text-emerald-600" aria-hidden="true" /> Secure Google sign-in · Free to get started</p>
+            </div>
+            <ProductPreview />
           </div>
+        </section>
 
-          <div className="grid gap-5 mt-14">
+        <section className="border-y border-slate-100 bg-slate-50/60 py-16 sm:py-20" aria-labelledby="features-heading">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold text-violet-700">WHY MATCHORA</p>
+              <h2 id="features-heading" className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Less scrolling. More relevant opportunities.</h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">The tools you need to make your job search clearer and more organized.</p>
+            </div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {features.map(({ icon: Icon, title, description }) => (
+                <article key={title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-700"><Icon size={21} aria-hidden="true" /></span>
+                  <h3 className="mt-5 text-base font-bold text-slate-900">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            {features.map((item) => (
-
-              <div
-                key={item.title}
-                className="bg-white rounded-3xl shadow-sm border border-neutral-100 p-6 flex gap-5 hover:shadow-lg transition"
-              >
-
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${item.color}`}>
-
-                  <item.icon size={28} />
-
+        <section className="py-16 sm:py-20" aria-labelledby="steps-heading">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-violet-700">HOW IT WORKS</p>
+              <h2 id="steps-heading" className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Start with a few simple steps</h2>
+            </div>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {steps.map((step) => (
+                <div key={step.number} className="rounded-2xl border border-slate-200 p-6 sm:p-7">
+                  <span className="text-sm font-bold text-violet-600">{step.number}</span>
+                  <h3 className="mt-4 text-lg font-bold text-slate-900">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{step.description}</p>
                 </div>
-
-                <div>
-
-                  <h3 className="font-bold text-xl">
-
-                    {item.title}
-
-                  </h3>
-
-                  <p className="text-neutral-500 mt-2">
-
-                    {item.desc}
-
-                  </p>
-
-                </div>
-
-              </div>
-
-            ))}
-
+              ))}
+            </div>
           </div>
+        </section>
 
+        <section ref={signInRef} id="login-section" className="scroll-mt-8 bg-violet-50/70 py-16 sm:py-20" aria-labelledby="signin-heading">
+          <div className="mx-auto max-w-xl px-4 text-center sm:px-6">
+            <div className="rounded-[26px] border border-violet-100 bg-white px-5 py-9 shadow-sm sm:px-10 sm:py-11">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><LockKeyhole size={22} aria-hidden="true" /></span>
+              <h2 id="signin-heading" className="mt-5 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Your next opportunity starts here</h2>
+              <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-600">Sign in with Google to get started with Matchora.</p>
+              <div className="mt-7 flex min-h-12 items-center justify-center">
+                {signingIn ? (
+                  <span role="status" className="text-sm font-medium text-violet-700">Signing you in…</span>
+                ) : (
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setAuthError("Google sign-in failed. Please try again.")}
+                    theme="outline"
+                    shape="pill"
+                    text="continue_with"
+                  />
+                )}
+              </div>
+              {authError && <p role="alert" className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{authError}</p>}
+              <p className="mt-6 text-xs leading-5 text-slate-500">By continuing, you can review our <Link to="/privacy" className="font-semibold text-violet-700 underline underline-offset-2">Privacy Policy</Link>.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-slate-100 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <Brand compact />
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-600">
+            <Link to="/aboutMatchora" className="hover:text-violet-700">About</Link>
+            <Link to="/pricing" className="hover:text-violet-700">Pricing</Link>
+            <Link to="/privacy" className="hover:text-violet-700">Privacy</Link>
+          </nav>
+          <p className="text-xs text-slate-500">© {new Date().getFullYear()} Matchora. All rights reserved.</p>
         </div>
-
-        {/* RIGHT */}
-
-        <div className="relative">
-
-          <div className="bg-white rounded-[40px] border border-neutral-200 shadow-2xl p-10">
-
-            <div className="flex justify-between items-center">
-
-              <div>
-
-                <p className="text-sm text-neutral-500">
-
-                  Resume Score
-
-                </p>
-
-                <h2 className="text-5xl font-black mt-2">
-
-                  92%
-
-                </h2>
-
-              </div>
-
-              <div className="w-24 h-24 rounded-full border-[10px] border-violet-600 border-r-violet-200 border-b-violet-200" />
-
-            </div>
-
-            <div className="mt-10">
-
-              <h4 className="font-semibold">
-
-                Top Skills
-
-              </h4>
-
-              <div className="flex flex-wrap gap-3 mt-5">
-
-                {[
-                  "React",
-                  "Node.js",
-                  "MongoDB",
-                  "Express",
-                  "JavaScript",
-                ].map((skill) => (
-
-                  <span
-                    key={skill}
-                    className="rounded-full bg-violet-100 text-violet-700 px-4 py-2 text-sm font-medium"
-                  >
-
-                    {skill}
-
-                  </span>
-
-                ))}
-
-              </div>
-
-            </div>
-
-            <div className="mt-10 rounded-3xl bg-neutral-50 p-6">
-
-              <div className="flex items-center justify-between">
-
-                <div className="flex gap-4">
-
-                  <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
-
-                    <Briefcase className="text-violet-600" />
-
-                  </div>
-
-                  <div>
-
-                    <h4 className="font-bold">
-
-                      MERN Developer
-
-                    </h4>
-
-                    <p className="text-sm text-neutral-500">
-
-                      Google • Bengaluru
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-                <span className="rounded-full bg-emerald-100 text-emerald-700 px-3 py-1 text-sm font-semibold">
-
-                  95% Match
-
-                </span>
-
-              </div>
-
-            </div>            {/* Google Login Card */}
-
-            <div className="mt-10 rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
-
-              <div className="text-center">
-
-                <div className="w-16 h-16 rounded-2xl bg-violet-600 mx-auto flex items-center justify-center">
-
-                  <Sparkles className="text-white" size={28} />
-
-                </div>
-
-                <h3 className="text-2xl font-bold mt-5">
-                  Welcome to Matchora
-                </h3>
-
-                <p className="text-neutral-500 mt-2">
-                  Continue with your Google account
-                </p>
-
-              </div>
-
-              <div className="mt-8 flex justify-center">
-
-                <GoogleLogin
-                  onSuccess={async (credentialResponse) => {
-
-                    const res = await fetch(
-                      `${API_URL}/api/auth/google`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          token: credentialResponse.credential,
-                        }),
-                      }
-                    );
-
-                    if (res.ok) {
-                      window.location.href = "/dashboard";
-                    }
-                  }}
-                  onError={() => console.log("Google Login Failed")}
-                />
-
-              </div>
-
-              <p className="text-center text-xs text-neutral-400 mt-6">
-                Secure Google Sign-In
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* Floating Cards */}
-
-          <div className="absolute -top-8 -left-10 bg-white rounded-2xl shadow-xl border border-neutral-100 p-5 w-60">
-
-            <div className="flex items-center gap-3">
-
-              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-
-                <CheckCircle2
-                  className="text-emerald-600"
-                  size={24}
-                />
-
-              </div>
-
-              <div>
-
-                <h4 className="font-semibold">
-                  Resume Approved
-                </h4>
-
-                <p className="text-xs text-neutral-500">
-                  ATS Friendly
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          <div className="absolute bottom-10 -right-10 bg-white rounded-2xl shadow-xl border border-neutral-100 p-5 w-60">
-
-            <div className="flex items-center gap-3">
-
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-
-                <Search
-                  className="text-blue-600"
-                  size={22}
-                />
-
-              </div>
-
-              <div>
-
-                <h4 className="font-semibold">
-                  2,340 Jobs Found
-                </h4>
-
-                <p className="text-xs text-neutral-500">
-                  Based on your resume
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* HOW IT WORKS */}
-
-      <section className="max-w-7xl mx-auto px-8 py-24">
-
-        <div className="text-center">
-
-          <span className="text-violet-600 font-semibold">
-            HOW IT WORKS
-          </span>
-
-          <h2 className="text-4xl font-black mt-4">
-            Your Journey To The Perfect Job
-          </h2>
-
-          <p className="text-neutral-500 mt-4 max-w-2xl mx-auto">
-            Matchora automates your job search from resume
-            analysis to application tracking.
-          </p>
-
-        </div>
-
-        <div className="grid md:grid-cols-4 gap-8 mt-16">
-
-          <div className="bg-white rounded-3xl border border-neutral-100 p-8 shadow-sm">
-
-            <FileText
-              className="text-violet-600"
-              size={40}
-            />
-
-            <h3 className="font-bold text-xl mt-6">
-              Upload Resume
-            </h3>
-
-            <p className="text-neutral-500 mt-3">
-              Upload your latest resume securely.
-            </p>
-
-          </div>
-
-          <div className="bg-white rounded-3xl border border-neutral-100 p-8 shadow-sm">
-
-            <TrendingUp
-              className="text-emerald-600"
-              size={40}
-            />
-
-            <h3 className="font-bold text-xl mt-6">
-              AI Analysis
-            </h3>
-
-            <p className="text-neutral-500 mt-3">
-              Get ATS score and improvement suggestions.
-            </p>
-
-          </div>
-
-          <div className="bg-white rounded-3xl border border-neutral-100 p-8 shadow-sm">
-
-            <Target
-              className="text-orange-500"
-              size={40}
-            />
-
-            <h3 className="font-bold text-xl mt-6">
-              Find Jobs
-            </h3>
-
-            <p className="text-neutral-500 mt-3">
-              Personalized recommendations updated daily.
-            </p>
-
-          </div>
-
-          <div className="bg-white rounded-3xl border border-neutral-100 p-8 shadow-sm">
-
-            <Send
-              className="text-blue-600"
-              size={40}
-            />
-
-            <h3 className="font-bold text-xl mt-6">
-              Apply Faster
-            </h3>
-
-            <p className="text-neutral-500 mt-3">
-              Track applications from one dashboard.
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>      {/* TRUST SECTION */}
-
-      <section className="max-w-7xl mx-auto px-8 pb-24">
-
-        <div className="rounded-[40px] bg-violet-600 text-white p-12">
-
-          <div className="grid lg:grid-cols-3 gap-8">
-
-            <div className="flex gap-4">
-
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-
-                <ShieldCheck size={28} />
-
-              </div>
-
-              <div>
-
-                <h3 className="font-bold text-xl">
-                  Secure Google Sign In
-                </h3>
-
-                <p className="text-violet-100 mt-2 leading-7">
-                  We use Google's secure authentication.
-                  Your password is never stored.
-                </p>
-
-              </div>
-
-            </div>
-
-            <div className="flex gap-4">
-
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-
-                <Lock size={28} />
-
-              </div>
-
-              <div>
-
-                <h3 className="font-bold text-xl">
-                  Privacy First
-                </h3>
-
-                <p className="text-violet-100 mt-2 leading-7">
-                  Your resume and personal information
-                  always remain private.
-                </p>
-
-              </div>
-
-            </div>
-
-            <div className="flex gap-4">
-
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-
-                <BadgeCheck size={28} />
-
-              </div>
-
-              <div>
-
-                <h3 className="font-bold text-xl">
-                  Trusted Platform
-                </h3>
-
-                <p className="text-violet-100 mt-2 leading-7">
-                  Built for students, freshers and
-                  experienced professionals.
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* CTA */}
-
-      <section className="max-w-5xl mx-auto px-8 pb-24">
-
-        <div className="rounded-[40px] bg-gradient-to-r from-violet-600 to-purple-500 text-white p-14 text-center shadow-xl">
-
-          <h2 className="text-5xl font-black leading-tight">
-
-            Ready To Find
-            <br />
-            Your Dream Job?
-
-          </h2>
-
-          <p className="mt-6 text-violet-100 text-lg">
-
-            Upload your resume,
-            discover personalized opportunities,
-            and track every application in one place.
-
-          </p>
-
-          <div id="login-section" className="mt-10 flex justify-center">
-
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-
-                const res = await fetch(
-                  `${API_URL}/api/auth/google`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({
-                      token: credentialResponse.credential,
-                    }),
-                  }
-                );
-
-                if (res.ok) {
-                  window.location.href = "/dashboard";
-                }
-
-              }}
-              onError={() => console.log("Google Login Failed")}
-            />
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* FOOTER */}
-
-      <footer className="border-t border-neutral-200">
-
-        <div className="max-w-7xl mx-auto px-8 py-10 flex flex-col md:flex-row justify-between items-center gap-6">
-
-          <div className="flex items-center gap-3">
-
-            <div className="w-11 h-11 rounded-2xl bg-violet-600 flex items-center justify-center">
-
-              <Sparkles
-                className="text-white"
-                size={20}
-              />
-
-            </div>
-
-            <div>
-
-              <h3 className="font-bold text-xl">
-
-                Match
-                <span className="text-violet-600">
-                  ora
-                </span>
-
-              </h3>
-
-              <p className="text-sm text-neutral-500">
-
-                AI Powered Job Search
-
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="flex gap-8 text-sm text-neutral-500">
-
-            <a
-              href="/privacy"
-              className="hover:text-violet-600 transition"
-            >
-              Terms
-            </a>
-
-            <a
-              href="/privacy"
-              className="hover:text-violet-600 transition"
-            >
-              Privacy
-            </a>
-
-            <a
-              href="/aboutMatchora"
-              className="hover:text-violet-600 transition"
-            >
-              About
-            </a>
-
-          </div>
-
-          <p className="text-sm text-neutral-400">
-
-            © {new Date().getFullYear()} Matchora.
-            All rights reserved.
-
-          </p>
-
-        </div>
-
       </footer>
-
     </div>
-
   );
-
 }
