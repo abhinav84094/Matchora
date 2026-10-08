@@ -26,12 +26,10 @@
     "node-cron": "^4.6.0",
     "nodemon": "^3.1.14",
     "pdf-parse": "^1.1.1",
-    "puppeteer": "^25.3.0",
     "razorpay": "^2.9.8"
   },
   "allowScripts": {
     "@google/genai@2.10.0": true,
-    "protobufjs@7.6.4": true,
-    "puppeteer@25.3.0": true
+    "protobufjs@7.6.4": true
   }
 }

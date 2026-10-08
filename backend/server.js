@@ -8,7 +8,6 @@ import jobRoutes from "./routes/jobRoutes.js"
 import feedbackRoutes from "./routes/feedbackRoutes.js"
 import adminRoutes from "./routes/adminRoutes.js"
 import cors from "cors"
-import { startJobScraper } from "./cron/scrapeJobsCron.js";
 import { startCleanupCron } from "./cron/cleanupJobsCron.js";
 import fs from "fs";
 import {apiLimiter, authLimiter} from "./middleware/Ratelimiters.js"
@@ -69,7 +68,6 @@ app.listen(process.env.PORT, async ()=>{
     await DBconnection();
 
     // await seedSkillResources();
-    // startJobScraper();
     // startCleanupCron();
     console.log(`Server is started on PORT ${process.env.PORT}`)
 })

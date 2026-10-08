@@ -34,7 +34,8 @@ export const getRecommendations = async (req, res) => {
         const page = isPro ? Math.max(parseInt(req.query.page) || 1, 1) : 1;
 
         // Cap limit at 100 to prevent an abusive/huge query from one request
-        const limit = isPro ? Math.min(Math.max(parseInt(req.query.limit) || 25, 1), 100 ): 5;
+        // Pro requests always use 25-job batches; the free plan remains limited to five.
+        const limit = isPro ? 25 : 5;
 
         const location =
             typeof req.query.location === "string"

@@ -103,8 +103,7 @@ export default function AdminDashboard() {
             <ChartSkeleton />
           )}
           <p className="text-xs text-neutral-400 mt-3">
-            Live scraping currently covers LinkedIn only; other platforms will
-            populate as scrapers are enabled.
+            Jobs already stored in the database appear here. No scraper is currently scheduled.
           </p>
         </div>
 

@@ -79,6 +79,19 @@ function LoadingState({ role }) {
 /* ---------------- Main page ---------------- */
 // Key used to match a recommended job against an existing application
 const jobKeyOf = (job) => `${job.platform}:${job.jobKey}`;
+const LOCATION_SUGGESTIONS = [
+  "Bengaluru",
+  "Bangalore",
+  "Chennai",
+  "Delhi NCR",
+  "Gurugram",
+  "Hyderabad",
+  "Kolkata",
+  "Mumbai",
+  "Noida",
+  "Pune",
+  "Remote",
+];
 
 export default function Recommendations() {
   const [pendingApplication, setPendingApplication] = useState(null);
@@ -90,7 +103,10 @@ export default function Recommendations() {
   const [error, setError] = useState(null);
   const hasFetched = useRef(false);
   const [locationSearch, setLocationSearch] = useState("");
-  const [debouncedLocation, setDebouncedLocation] = useState("");
+  const [activeLocation, setActiveLocation] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [applicationsLoaded, setApplicationsLoaded] = useState(false);
+  const [searchVersion, setSearchVersion] = useState(0);
 
   const PAGE_SIZE = 25;
   const [page, setPage] = useState(1);
@@ -111,15 +127,6 @@ export default function Recommendations() {
 
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedLocation(locationSearch.trim());
-      setPage(1);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [locationSearch]);
-
-  useEffect(() => {
     async function fetchApplications() {
       try {
         const res = await fetch(`${API_URL}/api/jobs/applications`, {
@@ -134,6 +141,8 @@ export default function Recommendations() {
         }
       } catch {
         // Non-fatal — cards will just default to "not applied" until clicked
+      } finally {
+        setApplicationsLoaded(true);
       }
     }
     fetchApplications();
@@ -155,6 +164,17 @@ export default function Recommendations() {
     });
   };
 
+  const handleLocationSearch = (event) => {
+    event.preventDefault();
+    setActiveLocation(locationSearch.trim());
+    setPage(1);
+    setJobs([]);
+    setPagination({ totalJobs: 0, totalPages: 1, hasNextPage: false, hasPreviousPage: false });
+    setError(null);
+    setLoadingMore(false);
+    setSearchVersion((version) => version + 1);
+  };
+
   // Automatically drive the search from the resume — no manual query entry
   useEffect(() => {
     if (resume?.preferredRoles?.length > 0 && !hasFetched.current) {
@@ -165,50 +185,74 @@ export default function Recommendations() {
   }, [resume]);
 
   useEffect(() => {
-    if (!activeRole) return;
+    if (!activeRole || !applicationsLoaded) return undefined;
+
+    const controller = new AbortController();
+    const append = page > 1;
+
     async function fetchJobs() {
-      setLoading(true);
+      if (append) setLoadingMore(true);
+      else setLoading(true);
       setError(null);
+
       try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+          platform: activePlatform,
+        });
+        if (activeLocation) params.set("location", activeLocation);
+
         const res = await fetch(
-          `${API_URL}/api/jobs/recommendations?page=${page}&limit=${PAGE_SIZE}&platform=${activePlatform}`,
-          { credentials: "include" }
+          `${API_URL}/api/jobs/recommendations?${params.toString()}`,
+          { credentials: "include", signal: controller.signal }
         );
         const data = await res.json();
-        if (data.success) {
-          const filteredJobs = data.jobs.filter(
-            (job) => !appliedKeysRef.current.has(jobKeyOf(job))
-          );
-          setJobs(filteredJobs);
-          setIsPro(data.isPro);   
-          setPagination({
-            totalJobs: data.totalJobs,
-            totalPages: data.totalPages,
-            hasNextPage: data.hasNextPage,
-            hasPreviousPage: data.hasPreviousPage,
-          });
-        } else {
-          setError("Couldn't load jobs right now.");
-          setJobs([]);
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || "Couldn't load jobs right now.");
         }
-      } catch {
-        setError("Something went wrong. Please try again.");
-        setJobs([]);
+
+        const nextJobs = (data.jobs || []).filter(
+          (job) => !appliedKeysRef.current.has(jobKeyOf(job))
+        );
+
+        setJobs((previousJobs) => {
+          if (!append) return nextJobs;
+
+          const seen = new Set(previousJobs.map(jobKeyOf));
+          const uniqueNextJobs = nextJobs.filter((job) => {
+            const key = jobKeyOf(job);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          return [...previousJobs, ...uniqueNextJobs];
+        });
+
+        setIsPro(data.isPro);
+        setPagination({
+          totalJobs: data.totalJobs,
+          totalPages: data.totalPages,
+          hasNextPage: data.hasNextPage,
+          hasPreviousPage: data.hasPreviousPage,
+        });
+      } catch (fetchError) {
+        if (fetchError.name === "AbortError") return;
+        setError(fetchError.message || "Something went wrong. Please try again.");
+        if (!append) setJobs([]);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     }
-    fetchJobs();
-    // Intentionally NOT depending on appliedKeys — applying to a job
-    // updates local state only (see markApplied) and must not
-    // re-trigger a recommendations fetch.
-  }, [activeRole, page, activePlatform]);
 
-  const filteredJobs = jobs.filter((job) =>
-    (job.location || "")
-      .toLowerCase()
-      .includes(locationSearch.trim().toLowerCase())
-  );
+    fetchJobs();
+    // Applied jobs remain filtered locally; a location request runs only on Search.
+    return () => controller.abort();
+  }, [activeRole, page, activePlatform, activeLocation, searchVersion, applicationsLoaded]);
 
 
 const handleApplied = async () => {
@@ -295,8 +339,12 @@ const handleNotYet = () => {
 
       {!loading && error && <p className="text-sm text-red-500 py-8 text-center">{error}</p>}
 
-      {!loading && !error && resume && jobs.length === 0 && (
-        <p className="text-sm text-neutral-400 py-8 text-center">No jobs found for this role right now.</p>
+      {!loading && !loadingMore && !error && !pagination.hasNextPage && resume && jobs.length === 0 && (
+        <p className="text-sm text-neutral-400 py-8 text-center">
+          {activeLocation
+            ? `No recommendations found for ${activeLocation}. Try another location.`
+            : "No jobs found for this role right now."}
+        </p>
       )}
 
 
@@ -357,31 +405,48 @@ const handleNotYet = () => {
   <>
     {/* LOCATION SEARCH */}
     {!error && resume && (
-      <div className="relative mb-5">
-        <input
-          type="search"
-          value={locationSearch}
-          onChange={(e) => setLocationSearch(e.target.value)}
-          placeholder="Search by location (e.g. Patna, Remote)"
-          aria-label="Search recommended jobs by location"
-          className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-        />
-      </div>
+      <form onSubmit={handleLocationSearch} className="mb-5">
+        <label
+          htmlFor="recommendation-location"
+          className="mb-2 block text-sm font-medium text-neutral-700"
+        >
+          Search by location
+        </label>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            id="recommendation-location"
+            list="recommendation-location-suggestions"
+            type="search"
+            value={locationSearch}
+            onChange={(event) => setLocationSearch(event.target.value)}
+            placeholder="Try Bengaluru, Mumbai, or Remote"
+            className="min-w-0 flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          />
+          <datalist id="recommendation-location-suggestions">
+            {LOCATION_SUGGESTIONS.map((location) => (
+              <option key={location} value={location} />
+            ))}
+          </datalist>
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Search
+          </button>
+        </div>
+        {activeLocation && (
+          <p className="mt-2 text-xs text-neutral-500">
+            Showing matches for <span className="font-medium">{activeLocation}</span>
+          </p>
+        )}
+      </form>
     )}
 
-    {/* NO LOCATION MATCH */}
-    {!error &&
-      jobs.length > 0 &&
-      filteredJobs.length === 0 && (
-        <p className="py-6 text-center text-sm text-neutral-500">
-          No jobs found for this location on the current page.
-        </p>
-      )}
-
-    {/* FILTERED JOB CARDS */}
-    {!error && (
+    {/* RECOMMENDATION CARDS */}
+    {!loading && (
       <div className="flex flex-col gap-3">
-        {filteredJobs.map((job) => (
+        {jobs.map((job) => (
           <JobCard
             key={jobKeyOf(job)}
             job={job}
@@ -427,30 +492,19 @@ const handleNotYet = () => {
       </div>
     )}
 
-      {/* Only show pagination for Pro users */}
-    {!loading && !error && jobs.length > 0 && 
-    pagination.totalPages > 1 && isPro && (  
-      <div className="flex items-center justify-between mt-6">
+      {/* Pro users load recommendations in 25-job batches. */}
+    {!loading && isPro && (pagination.hasNextPage || (Boolean(error) && page > 1)) && (
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <p className="text-xs text-neutral-500">
+          Showing {jobs.length} loaded recommendations
+        </p>
         <button
-          onClick={() => setPage((p) => Math.max(p - 1, 1))}
-          disabled={!pagination.hasPreviousPage}
-          className="text-sm font-medium px-4 py-2 rounded-lg 
-                    border border-neutral-200 disabled:opacity-40 
-                    disabled:cursor-not-allowed hover:border-neutral-300"
+          type="button"
+          onClick={() => { setLoadingMore(true); if (error) { setError(null); setSearchVersion((version) => version + 1); } else { setPage((currentPage) => currentPage + 1); } }}
+          disabled={loadingMore}
+          className="rounded-xl border border-violet-200 bg-white px-6 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-wait disabled:opacity-60"
         >
-          Previous
-        </button>
-        <span className="text-xs text-neutral-400">
-          Page {page} of {pagination.totalPages}
-        </span>
-        <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={!pagination.hasNextPage}
-          className="text-sm font-medium px-4 py-2 rounded-lg 
-                    border border-neutral-200 disabled:opacity-40 
-                    disabled:cursor-not-allowed hover:border-neutral-300"
-        >
-          Next
+          {loadingMore ? "Loading..." : error ? "Retry Load More" : "Load More"}
         </button>
       </div>
     )}

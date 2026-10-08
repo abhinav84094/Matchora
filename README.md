@@ -21,7 +21,7 @@ Early-career job seekers face several challenges:
 Matchora follows a resume-first workflow:
 1. Candidate authenticates with Google and uploads a resume.
 2. Backend extracts text from the resume and runs AI analysis to produce structured data (skills, education, experience, projects, ATS/formatting feedback).
-3. Scheduled scrapers ingest job listings into the database.
+3. Job records are stored in MongoDB for recommendation queries.
 4. A matching layer compares candidate resume data and job requirements to compute match scores and list matched/missing skills.
 5. Users view paginated recommendations, apply, and track their application statuses. Feedback and admin routes collect product feedback and provide administrative insights.
 
@@ -32,11 +32,11 @@ Matchora follows a resume-first workflow:
 - Resume upload (PDF) via Multer and server-side extraction using pdf-parse.
 - Gemini (Google GenAI) integration for structured resume analysis (genai client configured).
 - ATS scoring and formatting analysis (computed from AI analysis).
-- Job ingestion via Puppeteer scrapers (LinkedIn scraper implemented) run on scheduled cron jobs.
+- Job recommendations use active job records stored in MongoDB.
 - Match / recommendation pipeline that extracts skills from job descriptions and calculates experience eligibility, producing match information.
 - Application model and routes for tracking application status and status history.
 - Feedback collection and admin routes for management and analytics.
-- Scheduled cleanup and scraping cron jobs started at server boot.
+- A cleanup cron is implemented; job ingestion is not scheduled by the server.
 
 Only the features above reflect what is present in the codebase. See the Code Reference sections below for exact files and functions.
 
@@ -47,7 +47,7 @@ User
 → Authenticate (Google ID token → POST /api/auth/google)  
 → Upload resume (POST /api/user/upload-resume, multipart/form-data)  
 → Backend extracts PDF text (pdf-parse) → sends text to Gemini analysis → structured Resume document saved  
-→ Cron scrapers ingest jobs (Puppeteer) → Job documents saved/updated in MongoDB  
+→ Job documents in MongoDB → Recommendations are scored against resume data
 → Recommendation engine compares Resume ↔ Job requiredSkills & experience → match score + matched/missing skills  
 → User views paginated recommendations and applies → Application document created/updated  
 → Feedback collected via API → Admin endpoints expose analytics
@@ -59,7 +59,7 @@ User
 - Database: MongoDB (Mongoose ODM) for persistence of users, resumes, jobs and applications.
 - Authentication: Google ID token verification + JWT stored in HTTP-only cookie; middleware validates JWT for protected routes.
 - Resume processing: Multer receives uploads; pdf-parse extracts text; AI (Gemini) converts extracted text into structured data stored in Resume documents.
-- Job ingestion: Puppeteer-based scrapers run on a schedule (cron) to fetch jobs and persist them.
+- Job ingestion: Recommendations use active job documents stored in MongoDB; no scraper is scheduled in this repository.
 - Recommendation engine: Normalization and matching logic processes user resume data against job requirement data to compute scores and diffs.
 - Application tracking: Application documents track job applications and state transitions.
 - Admin & feedback: Routes collect user feedback and provide admin access to aggregated insights.
@@ -72,8 +72,6 @@ flowchart LR
   B -->|API calls (cookies)| C[Backend (Express)]
   C --> D[(MongoDB)]
   C --> E[Gemini AI (genai client)]
-  C --> F[Puppeteer Scrapers (cron)]
-  F --> C
   E --> C
   C -->|notifications / logs| G[Admin / Feedback]
 ```
@@ -87,7 +85,7 @@ flowchart LR
 | Database | MongoDB with Mongoose |
 | AI / Resume analysis | Google GenAI client (`@google/genai`) |
 | Authentication | google-auth-library (ID token verification) + jsonwebtoken (JWT) |
-| Job ingestion | Puppeteer |
+| Job data | MongoDB Job documents |
 | File parsing | pdf-parse |
 | Scheduling | node-cron |
 | File uploads | Multer |
@@ -95,7 +93,7 @@ flowchart LR
 ## Repository structure (important paths)
 
 - backend/
-  - server.js — Express app entry; creates uploads dir, mounts routes and starts cron jobs
+  - server.js — Express app entry; creates uploads dir and mounts routes
   - package.json — backend scripts & dependencies
   - config/gemini.js — genai client configuration (reads GEMINI_API_KEY)
   - db/mongodb.js — Mongoose connection
@@ -119,11 +117,7 @@ flowchart LR
   - services/
     - geminiService.js — analyzeResume wrapper (calls AI, enforces schema)
     - recommendationService.js — skill extraction and experience eligibility helpers
-    - scrapers/
-      - linkedInScraper.js — LinkedIn scraping and job ingestion implementation
-    - browser.js — Puppeteer browser helper
   - cron/
-    - scrapeJobsCron.js — schedules and runs scrapers
     - cleanupJobsCron.js — scheduled cleanup tasks
   - middleware/
     - authMiddleware.js — verifies JWT cookie & loads user
@@ -148,13 +142,10 @@ Important behavior:
 - Upload rate-limiting: after a successful resume upload the controller sets nextUploadAt and rejects further uploads until 24 hours have passed (prevents excessive re-uploads).
 - Uploaded file is deleted from disk after processing.
 
-### Job ingestion & scraping
-- The project includes a LinkedIn scraper (backend/services/scrapers/linkedInScraper.js) that:
-  - Queries a LinkedIn guest jobs endpoint for a list of postings for configured roles.
-  - Opens job detail pages with Puppeteer and extracts descriptions, posted dates and other metadata.
-  - Extracts required skills from the job description via recommendationService helpers.
-  - Bulk writes (upsert) Job documents (backend/models/Job.js) to MongoDB and sets indexes for search and deduplication (jobKey, jobUrl).
-- Scrapers run on schedule via node-cron. scrapeJobsCron.js starts an initial run and schedules repeated runs.
+### Job data
+- Recommendation endpoints query active Job documents already stored in MongoDB.
+- No job-scraping worker or scheduled job-ingestion task is enabled in this repository.
+- The Naukri scraper module is currently a placeholder that returns no results.
 
 ### Recommendation / matching
 - Matching helpers are present in backend/services/recommendationService.js and are used both by the scraper (to extract job required skills and experience) and by recommendation endpoints (to compute match scores). The matching logic uses:
@@ -285,8 +276,8 @@ npm run dev
 4. Database
 - Ensure MongoDB instance is available (local or Atlas). Set MONGO_URL accordingly.
 
-5. Notes for scrapers
-- The backend starts cron jobs (scrapeJobsCron.js and cleanupJobsCron.js) on server start. Puppeteer runs headless Chromium; for certain containerized environments you may need additional Chromium flags or dependencies.
+5. Job data
+- The server does not schedule job ingestion. Recommendations read active Job documents already stored in MongoDB.
 
 ## Security & production notes (what is implemented)
 
@@ -300,7 +291,7 @@ Note: Additional production-grade security (rate limiting, Helmet, strong input 
 
 ## Performance considerations & operational notes
 
-- Scraping is scheduled and runs outside of request handlers to avoid blocking.
+- Recommendation requests read active job documents and apply resume-based matching.
 - Job model indexes (jobUrl, postedDate, requiredSkills, status) help query performance.
 - Resume uploads are rate-limited via nextUploadAt to prevent repeated expensive AI calls.
 - For scale, consider caching recommendation results, adding background worker queues, and sharding job storage as required.
@@ -309,20 +300,19 @@ Note: Additional production-grade security (rate limiting, Helmet, strong input 
 
 Matchora is an MVP implementation that includes:
 - Google authentication and JWT session handling
-- Resume upload, text extraction and AI-assisted analysis (Gemini integration points present)
-- Job scraping (LinkedIn) and ingestion into MongoDB
-- A matching pipeline that computes fit scores and identifies matched/missing skills
-- Application tracking, feedback collection and admin route scaffolding
+- Resume upload, text extraction, and AI-assisted analysis
+- Resume-based recommendations over stored job listings
+- Application tracking and feedback collection
 
-The codebase is actively maintained. See the repository for the most recent commits and issue tracker for open tasks.
+Job ingestion is not currently scheduled by the backend.
 
 ## Roadmap
 
 Implemented (in codebase):
-- Authentication, resume parsing & AI analysis, job scraping, matching, application tracking, feedback, admin routes, cron jobs.
+- Authentication, resume parsing & AI analysis, job matching, application tracking, feedback, admin routes, and cleanup tasks.
 
 Planned / suggested improvements (not currently implemented unless present in code):
-- Add more job sources and resilient scrapers.
+- Add a job-ingestion service and integrate job sources.
 - Move uploads to cloud storage and enable file scanning.
 - Add server-side rate limiting, security headers and input validation.
 - Improve analytics dashboards and monitoring.
@@ -335,4 +325,4 @@ Planned / suggested improvements (not currently implemented unless present in co
 - Run linters and tests locally (tests to be added).
 - Commit changes and open a Pull Request describing the change.
 
-If you plan to modify scraping behavior or AI prompts, please check the scraping and geminiService implementations and respect source terms of service and API usage limits.
+If you add a job-ingestion source or modify AI prompts, review the relevant service and respect source terms of service and API usage limits.

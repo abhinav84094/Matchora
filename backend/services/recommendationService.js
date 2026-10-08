@@ -248,7 +248,7 @@ export const calculateExperienceEligibility = (
 
 const MIN_SKILL_SCORE =  Number(process.env.MIN_SKILL_SCORE) || 50;
 
-export const recommendJobs = async (resume,isPro, platform, { page = 1, limit = 25 } = {}) => {
+export const recommendJobs = async (resume,isPro, platform, { page = 1, limit = 25, location = "" } = {}) => {
 
     const canonicalResumeSkills = [
         ...new Set(resume.skills),
@@ -260,6 +260,14 @@ export const recommendJobs = async (resume,isPro, platform, { page = 1, limit = 
         status: "active",
         requiredSkills: { $in: canonicalResumeSkills },
     };
+
+    // Apply location in the database before candidate limits and pagination.
+    const locationTerm =
+        typeof location === "string" ? location.trim().slice(0, 100) : "";
+    if (locationTerm) {
+        const escapedLocation = locationTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        query.location = { $regex: escapedLocation, $options: "i" };
+    }
 
     var jobs = [];
 
