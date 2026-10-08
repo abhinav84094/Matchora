@@ -1,23 +1,98 @@
-import { useEffect, useState } from 'react'
 
-export function useInstallPrompt() {
-  const [installEvent, setInstallEvent] = useState(null)
+import { useSyncExternalStore } from "react";
 
-  useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault() // stop Chrome's automatic mini-banner
-      setInstallEvent(e) // save it so we can trigger it manually later
-    }
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [])
+// Shared across every InstallButton instance.
+let deferredPrompt = null;
+let isInstalled = false;
+let isPrompting = false;
 
-  const promptInstall = async () => {
-    if (!installEvent) return
-    installEvent.prompt()
-    await installEvent.userChoice
-    setInstallEvent(null) // can only be used once
+const listeners = new Set();
+
+function notify() {
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return Boolean(deferredPrompt) && !isInstalled && !isPrompting;
+}
+
+function getServerSnapshot() {
+  return false;
+}
+
+function handleBeforeInstallPrompt(event) {
+  event.preventDefault();
+
+  if (isInstalled) return;
+
+  deferredPrompt = event;
+  notify();
+}
+
+function handleAppInstalled() {
+  isInstalled = true;
+  deferredPrompt = null;
+  notify();
+}
+
+// Register once, when this module is first imported.
+if (typeof window !== "undefined") {
+  isInstalled =
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator.standalone === true;
+
+  window.addEventListener(
+    "beforeinstallprompt",
+    handleBeforeInstallPrompt
+  );
+
+  window.addEventListener("appinstalled", handleAppInstalled);
+}
+
+async function promptInstall() {
+  if (!deferredPrompt || isInstalled || isPrompting) {
+    return;
   }
 
-  return { canInstall: !!installEvent, promptInstall }
+  const event = deferredPrompt;
+
+  // The event can only be used once.
+  deferredPrompt = null;
+  isPrompting = true;
+  notify();
+
+  try {
+    await event.prompt();
+    const choice = await event.userChoice;
+
+    if (choice?.outcome === "accepted") {
+      // appinstalled will confirm installation.
+      // Do not mark installed merely because the prompt was accepted.
+    }
+
+    return choice;
+  } catch (error) {
+    console.error("PWA installation prompt failed:", error);
+  } finally {
+    isPrompting = false;
+    notify();
+  }
+}
+
+export function useInstallPrompt() {
+  const canInstall = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot
+  );
+
+  return {
+    canInstall,
+    promptInstall,
+  };
 }

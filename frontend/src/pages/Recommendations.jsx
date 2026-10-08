@@ -89,6 +89,8 @@ export default function Recommendations() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const hasFetched = useRef(false);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [debouncedLocation, setDebouncedLocation] = useState("");
 
   const PAGE_SIZE = 25;
   const [page, setPage] = useState(1);
@@ -106,6 +108,16 @@ export default function Recommendations() {
   // Load existing applications once so we can mark already-applied jobs
   // as "Applied" even after a refresh, instead of re-fetching per card.
   const appliedKeysRef = useRef(new Set());
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedLocation(locationSearch.trim());
+      setPage(1);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [locationSearch]);
 
   useEffect(() => {
     async function fetchApplications() {
@@ -191,6 +203,12 @@ export default function Recommendations() {
     // updates local state only (see markApplied) and must not
     // re-trigger a recommendations fetch.
   }, [activeRole, page, activePlatform]);
+
+  const filteredJobs = jobs.filter((job) =>
+    (job.location || "")
+      .toLowerCase()
+      .includes(locationSearch.trim().toLowerCase())
+  );
 
 
 const handleApplied = async () => {
@@ -332,20 +350,52 @@ const handleNotYet = () => {
         </div>
       )}
 
-      {!loading && (
-        <div className="flex flex-col gap-3">
-            {jobs.map((job) => (
-            <JobCard
-              key={jobKeyOf(job)}
-              job={job}
-              onApplicationCreated={({ job }) => {
-                  setPendingApplication(job);
-                  setShowConfirmModal(true);
-              }}
-            />
-          ))}
-        </div>
+
+      
+      
+{!loading && (
+  <>
+    {/* LOCATION SEARCH */}
+    {!error && resume && (
+      <div className="relative mb-5">
+        <input
+          type="search"
+          value={locationSearch}
+          onChange={(e) => setLocationSearch(e.target.value)}
+          placeholder="Search by location (e.g. Patna, Remote)"
+          aria-label="Search recommended jobs by location"
+          className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+        />
+      </div>
+    )}
+
+    {/* NO LOCATION MATCH */}
+    {!error &&
+      jobs.length > 0 &&
+      filteredJobs.length === 0 && (
+        <p className="py-6 text-center text-sm text-neutral-500">
+          No jobs found for this location on the current page.
+        </p>
       )}
+
+    {/* FILTERED JOB CARDS */}
+    {!error && (
+      <div className="flex flex-col gap-3">
+        {filteredJobs.map((job) => (
+          <JobCard
+            key={jobKeyOf(job)}
+            job={job}
+            onApplicationCreated={({ job }) => {
+              setPendingApplication(job);
+              setShowConfirmModal(true);
+            }}
+          />
+        ))}
+      </div>
+    )}
+  </>
+)}
+
 
       {!loading && !isPro && jobs.length >= 5 && (
       <div className="mt-6 rounded-xl border border-violet-200 

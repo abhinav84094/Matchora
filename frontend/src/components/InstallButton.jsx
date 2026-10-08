@@ -1,18 +1,20 @@
+
 import { Download } from "lucide-react";
 import { useInstallPrompt } from "../hooks/useInstallPrompt";
 
 export default function InstallButton() {
   const { canInstall, promptInstall } = useInstallPrompt();
 
-  if (!canInstall) return null; // hides itself if not installable (already installed, iOS, etc.)
+  if (!canInstall) return null;
 
   return (
     <button
+      type="button"
       onClick={promptInstall}
       aria-label="Install Matchora app"
-      className="flex items-center gap-2 text-s font-medium text-violet-600 border border-violet-200 rounded-full px-2.5 py-1 hover:bg-violet-50 focus-ring"
+      className="inline-flex items-center justify-center gap-2 rounded-full border border-violet-200 px-3 py-2 text-sm font-medium text-violet-600 transition-colors hover:bg-violet-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
     >
-      <Download size={12} />
+      <Download size={15} />
       Install App
     </button>
   );
