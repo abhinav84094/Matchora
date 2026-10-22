@@ -155,7 +155,7 @@ export default function Login() {
           <Brand />
           <div className="flex items-center gap-3 sm:gap-6">
             <Link to="/aboutMatchora" className="hidden text-sm font-medium text-slate-600 transition hover:text-violet-700 sm:inline">About</Link>
-            <Link to="/pricing" className="text-sm font-medium text-slate-600 transition hover:text-violet-700">Pricing</Link>
+            {/* <Link to="/pricing" className="text-sm font-medium text-slate-600 transition hover:text-violet-700">Pricing</Link> */}
             <button type="button" onClick={scrollToSignIn} className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600">Get Started</button>
           </div>
         </nav>
