@@ -38,6 +38,45 @@
 
     <!-- Razorpay Checkout -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+    <!-- Matchora Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://matchora.co.in/#organization",
+          "name": "Matchora",
+          "url": "https://matchora.co.in/"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://matchora.co.in/#website",
+          "name": "Matchora",
+          "url": "https://matchora.co.in/",
+          "publisher": {
+            "@id": "https://matchora.co.in/#organization"
+          },
+          "description": "Matchora helps job seekers discover fresh opportunities that match their resume, skills and experience."
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://matchora.co.in/#application",
+          "name": "Matchora",
+          "url": "https://matchora.co.in/",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "A resume-based job matching platform that helps users analyze their resume, discover relevant job opportunities and track applications.",
+          "publisher": {
+            "@id": "https://matchora.co.in/#organization"
+          }
+        }
+      ]
+    }
+    </script>
+
   </head>
 
   <body>
