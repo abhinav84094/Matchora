@@ -21,6 +21,18 @@ dotenv.config();
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "matchora-backend"
+  });
+});
+
 app.set("trust proxy", 1);
 
 app.use(helmet());
@@ -71,3 +83,5 @@ app.listen(process.env.PORT, async ()=>{
     // startCleanupCron();
     console.log(`Server is started on PORT ${process.env.PORT}`)
 })
+
+
