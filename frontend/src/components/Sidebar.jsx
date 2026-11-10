@@ -96,29 +96,6 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
       {/* Bottom section */}
       <div className="mt-auto pt-6">
 
-        {/* Upgrade banner — only for free users */}
-        {!isPro && (
-          <div className="rounded-xl bg-violet-50 border border-violet-100 p-4 mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={14} className="text-violet-600" />
-              <p className="text-sm font-semibold text-violet-800">
-                Upgrade to Pro
-              </p>
-            </div>
-            <p className="text-xs text-violet-500 leading-relaxed mb-3">
-              Unlock unlimited jobs and more.
-            </p>
-            <button
-              onClick={() => { navigate("/pricing"); onClose(); }}
-              className="w-full text-xs font-semibold bg-violet-600 
-                         hover:bg-violet-700 text-white rounded-lg py-2 
-                         transition-colors"
-            >
-              Upgrade — ₹30/month
-            </button>
-          </div>
-        )}
-
         {/* Pro badge for pro users */}
         {isPro && (
           <div className="rounded-xl bg-violet-50 border border-violet-100 
